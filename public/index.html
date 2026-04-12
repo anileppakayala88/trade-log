@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trade Log</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:       #0d0f0e;
+    --surface:  #131615;
+    --border:   #1e2320;
+    --border2:  #252a27;
+    --text:     #c8d4c8;
+    --muted:    #5a6b5a;
+    --green:    #4ade80;
+    --green-dim:#1a3d28;
+    --red:      #f87171;
+    --red-dim:  #3d1a1a;
+    --amber:    #fbbf24;
+    --cyan:     #67e8f9;
+    --mono:     'IBM Plex Mono', monospace;
+    --sans:     'IBM Plex Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 13px;
+    min-height: 100vh;
+    padding: 32px 24px;
+  }
+
+  /* ---- Header ---- */
+  .header {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    margin-bottom: 32px;
+    border-bottom: 1px solid var(--border2);
+    padding-bottom: 20px;
+  }
+  .header h1 {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--green);
+  }
+  .header .sub {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+  }
+  .blink {
+    display: inline-block;
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--green);
+    margin-right: 8px;
+    animation: blink 1.4s step-end infinite;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* ---- Stats bar ---- */
+  .stats {
+    display: flex;
+    gap: 2px;
+    margin-bottom: 28px;
+  }
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 14px 20px;
+    flex: 1;
+    min-width: 0;
+  }
+  .stat:first-child { border-radius: 4px 0 0 4px; }
+  .stat:last-child  { border-radius: 0 4px 4px 0; }
+  .stat-label {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .stat-value {
+    font-size: 22px;
+    font-weight: 600;
+    line-height: 1;
+    color: var(--text);
+  }
+  .stat-value.pos { color: var(--green); }
+  .stat-value.neg { color: var(--red); }
+
+  /* ---- Open trades ---- */
+  .section-label {
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .open-trades {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 28px;
+    min-height: 0;
+  }
+  .open-trade-card {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-left: 3px solid var(--amber);
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    border-radius: 0 4px 4px 0;
+    animation: slidein 0.3s ease;
+  }
+  @keyframes slidein { from { opacity:0; transform: translateX(-6px); } }
+  .open-ticker { font-weight: 600; font-size: 13px; color: var(--amber); min-width: 72px; }
+  .open-dir { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; }
+  .open-dir.buy  { color: var(--green); }
+  .open-dir.sell { color: var(--red); }
+  .open-meta { color: var(--muted); font-size: 12px; flex: 1; }
+  .open-partials { font-size: 11px; color: var(--cyan); }
+  .open-empty { color: var(--muted); font-size: 12px; padding: 10px 0; }
+
+  /* ---- Trade table ---- */
+  .table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 720px;
+  }
+  thead th {
+    background: var(--surface);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border2);
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.1s;
+  }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--surface); }
+  tbody tr.win { border-left: 2px solid var(--green); }
+  tbody tr.loss { border-left: 2px solid var(--red); }
+  td {
+    padding: 10px 14px;
+    font-size: 12px;
+    white-space: nowrap;
+    color: var(--text);
+  }
+  td.ticker  { font-weight: 600; color: var(--cyan); font-size: 13px; }
+  td.dir-buy  { color: var(--green); text-transform: uppercase; font-size: 11px; letter-spacing: 0.08em; }
+  td.dir-sell { color: var(--red);   text-transform: uppercase; font-size: 11px; letter-spacing: 0.08em; }
+  td.pnl-pos  { color: var(--green); font-weight: 600; }
+  td.pnl-neg  { color: var(--red);   font-weight: 600; }
+  td.muted    { color: var(--muted); }
+  td.exits    { color: var(--muted); font-size: 11px; max-width: 200px; white-space: normal; line-height: 1.6; }
+
+  .badge {
+    display: inline-block;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border-radius: 2px;
+    font-weight: 500;
+  }
+  .badge.win  { background: var(--green-dim); color: var(--green); }
+  .badge.loss { background: var(--red-dim);   color: var(--red); }
+  .badge.sl   { background: #2a1a0a; color: #f97316; }
+
+  .no-trades {
+    text-align: center;
+    padding: 48px;
+    color: var(--muted);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+  }
+
+  .refresh-hint {
+    margin-top: 20px;
+    font-size: 11px;
+    color: var(--muted);
+    text-align: right;
+    letter-spacing: 0.06em;
+  }
+  .refresh-hint a { color: var(--muted); text-decoration: underline; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1><span class="blink"></span>Trade Log</h1>
+  <span class="sub" id="last-updated">loading...</span>
+</div>
+
+<!-- Stats -->
+<div class="stats">
+  <div class="stat">
+    <div class="stat-label">Total Trades</div>
+    <div class="stat-value" id="stat-total">—</div>
+  </div>
+  <div class="stat">
+    <div class="stat-label">Win Rate</div>
+    <div class="stat-value" id="stat-wr">—</div>
+  </div>
+  <div class="stat">
+    <div class="stat-label">Total P&amp;L</div>
+    <div class="stat-value" id="stat-pnl">—</div>
+  </div>
+  <div class="stat">
+    <div class="stat-label">Open</div>
+    <div class="stat-value" id="stat-open">—</div>
+  </div>
+</div>
+
+<!-- Open trades -->
+<div class="section-label">Open positions</div>
+<div class="open-trades" id="open-trades">
+  <div class="open-empty">no open positions</div>
+</div>
+
+<!-- Closed trades table -->
+<div class="section-label">Closed trades</div>
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Ticker</th>
+        <th>Dir</th>
+        <th>Entry time</th>
+        <th>Entry $</th>
+        <th>Qty</th>
+        <th>SL</th>
+        <th>Exits</th>
+        <th>P&amp;L</th>
+        <th>Result</th>
+      </tr>
+    </thead>
+    <tbody id="trade-tbody">
+      <tr><td colspan="10" class="no-trades">— no closed trades yet —</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="refresh-hint">auto-refreshes every 30s · <a onclick="load()">refresh now</a></div>
+
+<script>
+function fmt(ts) {
+  if (!ts) return '—';
+  const d = new Date(ts);
+  return d.toLocaleDateString('en-CA') + ' ' + d.toLocaleTimeString('en-CA', { hour:'2-digit', minute:'2-digit', hour12:false });
+}
+function fmtPrice(p) { return p != null ? p.toFixed(2) : '—'; }
+function fmtPnl(p)   { return (p >= 0 ? '+' : '') + '$' + p.toFixed(2); }
+
+function renderStats(closed, openCount) {
+  const total = closed.length;
+  const wins  = closed.filter(t => t.result === 'win').length;
+  const pnl   = closed.reduce((s, t) => s + (t.pnl || 0), 0);
+
+  document.getElementById('stat-total').textContent = total || '0';
+  document.getElementById('stat-open').textContent  = openCount;
+
+  if (total === 0) {
+    document.getElementById('stat-wr').textContent  = '—';
+    document.getElementById('stat-pnl').textContent = '—';
+    return;
+  }
+
+  const wr = Math.round((wins / total) * 100);
+  const wrEl  = document.getElementById('stat-wr');
+  const pnlEl = document.getElementById('stat-pnl');
+  wrEl.textContent  = wr + '%';
+  wrEl.className    = 'stat-value' + (wr >= 50 ? ' pos' : ' neg');
+  pnlEl.textContent = fmtPnl(pnl);
+  pnlEl.className   = 'stat-value' + (pnl >= 0 ? ' pos' : ' neg');
+}
+
+function renderOpen(openTrades) {
+  const el = document.getElementById('open-trades');
+  const trades = Object.values(openTrades);
+  if (!trades.length) {
+    el.innerHTML = '<div class="open-empty">no open positions</div>';
+    return;
+  }
+  el.innerHTML = trades.map(t => {
+    const partialText = t.exits.length
+      ? t.exits.map(e => `${e.tp} ${e.qty}@${fmtPrice(e.price)}`).join(' · ')
+      : 'no partials yet';
+    return `
+      <div class="open-trade-card">
+        <span class="open-ticker">${t.ticker}</span>
+        <span class="open-dir ${t.direction}">${t.direction}</span>
+        <span class="open-meta">${t.qty} ct · entry ${fmtPrice(t.entryPrice)} · sl ${fmtPrice(t.slPrice)}</span>
+        <span class="open-partials">${partialText}</span>
+      </div>`;
+  }).join('');
+}
+
+function renderTable(closed) {
+  const tbody = document.getElementById('trade-tbody');
+  if (!closed.length) {
+    tbody.innerHTML = '<tr><td colspan="10" class="no-trades">— no closed trades yet —</td></tr>';
+    return;
+  }
+  tbody.innerHTML = closed.map((t, i) => {
+    const exitStr = t.exits.length
+      ? t.exits.map(e => `${e.tp} ${e.qty}@${fmtPrice(e.price)}`).join('<br>')
+      : '—';
+    const slNote = t.slHit ? ' <span class="badge sl">SL</span>' : '';
+    return `<tr class="${t.result}">
+      <td class="muted">${closed.length - i}</td>
+      <td class="ticker">${t.ticker}</td>
+      <td class="dir-${t.direction}">${t.direction}</td>
+      <td class="muted">${fmt(t.entryTime)}</td>
+      <td>${fmtPrice(t.entryPrice)}</td>
+      <td>${t.qty}</td>
+      <td class="muted">${fmtPrice(t.slPrice)}</td>
+      <td class="exits">${exitStr}${slNote}</td>
+      <td class="${t.pnl >= 0 ? 'pnl-pos' : 'pnl-neg'}">${fmtPnl(t.pnl)}</td>
+      <td><span class="badge ${t.result}">${t.result}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+async function load() {
+  try {
+    const res  = await fetch('trades.json?t=' + Date.now());
+    const data = await res.json();
+    const closed = data.closedTrades || [];
+    const open   = data.openTrades   || {};
+    renderStats(closed, Object.keys(open).length);
+    renderOpen(open);
+    renderTable(closed);
+    document.getElementById('last-updated').textContent =
+      'last updated ' + new Date().toLocaleTimeString('en-CA', { hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false });
+  } catch(e) {
+    document.getElementById('last-updated').textContent = 'error loading trades.json';
+    console.error(e);
+  }
+}
+
+load();
+setInterval(load, 30000);
+</script>
+</body>
+</html>
