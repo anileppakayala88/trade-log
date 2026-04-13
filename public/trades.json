@@ -1,4 +1,24 @@
 {
-  "openTrades": {},
+  "openTrades": {
+    "MNQ1!": {
+      "id": "MNQ1!-1776124195931",
+      "ticker": "MNQ1!",
+      "direction": "buy",
+      "entryTime": "2026-04-13T23:49:55.931Z",
+      "entryPrice": 25000,
+      "qty": 5,
+      "slPrice": 24950,
+      "targets": {
+        "tp1": 25050,
+        "tp1_qty": 1,
+        "tp2": 25100,
+        "tp2_qty": 0,
+        "tp3": 25150,
+        "tp3_qty": 4
+      },
+      "exits": [],
+      "status": "open"
+    }
+  },
   "closedTrades": []
 }
