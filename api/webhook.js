@@ -89,6 +89,7 @@ export default async function handler(req, res) {
   }
 
   const { ticker, action, price, qty, sl, tp1, tp1_qty, tp2, tp2_qty, tp3, tp3_qty, tp } = payload;
+  const strategy = (req.query.strategy || "").trim() || null;
 
   try {
     const { content, sha } = await getFile();
@@ -100,6 +101,7 @@ export default async function handler(req, res) {
       openTrades[ticker] = {
         id,
         ticker,
+        strategy,
         direction: action,
         entryTime: new Date().toISOString(),
         entryPrice: price,

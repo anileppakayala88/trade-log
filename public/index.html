@@ -250,6 +250,7 @@
       <tr>
         <th>#</th>
         <th>Ticker</th>
+        <th>Strategy</th>
         <th>Dir</th>
         <th>Entry time</th>
         <th>Entry $</th>
@@ -261,7 +262,7 @@
       </tr>
     </thead>
     <tbody id="trade-tbody">
-      <tr><td colspan="10" class="no-trades">— no closed trades yet —</td></tr>
+      <tr><td colspan="11" class="no-trades">— no closed trades yet —</td></tr>
     </tbody>
   </table>
 </div>
@@ -315,6 +316,7 @@ function renderOpen(openTrades) {
       <div class="open-trade-card">
         <span class="open-ticker">${t.ticker}</span>
         <span class="open-dir ${t.direction}">${t.direction}</span>
+        ${t.strategy ? `<span class="open-meta">${t.strategy}</span>` : ''}
         <span class="open-meta">${t.qty} ct · entry ${fmtPrice(t.entryPrice)} · sl ${fmtPrice(t.slPrice)}</span>
         <span class="open-partials">${partialText}</span>
       </div>`;
@@ -324,7 +326,7 @@ function renderOpen(openTrades) {
 function renderTable(closed) {
   const tbody = document.getElementById('trade-tbody');
   if (!closed.length) {
-    tbody.innerHTML = '<tr><td colspan="10" class="no-trades">— no closed trades yet —</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="11" class="no-trades">— no closed trades yet —</td></tr>';
     return;
   }
   tbody.innerHTML = closed.map((t, i) => {
@@ -335,6 +337,7 @@ function renderTable(closed) {
     return `<tr class="${t.result}">
       <td class="muted">${closed.length - i}</td>
       <td class="ticker">${t.ticker}</td>
+      <td class="muted">${t.strategy || '—'}</td>
       <td class="dir-${t.direction}">${t.direction}</td>
       <td class="muted">${fmt(t.entryTime)}</td>
       <td>${fmtPrice(t.entryPrice)}</td>
