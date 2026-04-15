@@ -1,11 +1,11 @@
 {
   "openTrades": {
     "MNQ1!": {
-      "id": "MNQ1!-1776225421474",
+      "id": "MNQ1!-1776225427321",
       "ticker": "MNQ1!",
       "strategy": "XiznitMNQ",
       "direction": "buy",
-      "entryTime": "2026-04-15T03:57:01.474Z",
+      "entryTime": "2026-04-15T03:57:07.321Z",
       "entryPrice": 26021,
       "qty": 5,
       "slPrice": 25993.5,
