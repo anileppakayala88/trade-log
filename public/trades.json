@@ -1,6 +1,7 @@
 {
-  "openTrades": {
-    "MNQ1!": {
+  "openTrades": {},
+  "closedTrades": [
+    {
       "id": "MNQ1!-1776215768415",
       "ticker": "MNQ1!",
       "strategy": "XiznitMNQ",
@@ -23,10 +24,18 @@
           "price": 26051.95,
           "qty": 1,
           "time": "2026-04-15T02:35:21.156Z"
+        },
+        {
+          "tp": "TP3",
+          "price": 26077,
+          "qty": 4,
+          "time": "2026-04-15T02:35:26.807Z"
         }
       ],
-      "status": "open"
+      "status": "closed",
+      "closeTime": "2026-04-15T02:35:26.807Z",
+      "pnl": 367.4,
+      "result": "win"
     }
-  },
-  "closedTrades": []
+  ]
 }
