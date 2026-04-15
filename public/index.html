@@ -207,6 +207,19 @@
     letter-spacing: 0.06em;
   }
   .refresh-hint a { color: var(--muted); text-decoration: underline; cursor: pointer; }
+
+  /* ---- Logs ---- */
+  .log-wrap {
+    margin-top: 28px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow-x: auto;
+  }
+  .log-wrap table { min-width: 640px; }
+  .log-entry.err td { color: var(--red); }
+  td.log-payload { font-size: 11px; color: var(--muted); max-width: 320px; white-space: normal; word-break: break-all; line-height: 1.5; }
+  td.log-result  { font-size: 11px; color: var(--cyan); }
+  td.log-error   { font-size: 11px; color: var(--red); }
 </style>
 </head>
 <body>
@@ -254,15 +267,32 @@
         <th>Dir</th>
         <th>Entry time</th>
         <th>Entry $</th>
+        <th>Exit $</th>
         <th>Qty</th>
-        <th>SL</th>
-        <th>Exits</th>
         <th>P&amp;L</th>
         <th>Result</th>
       </tr>
     </thead>
     <tbody id="trade-tbody">
-      <tr><td colspan="11" class="no-trades">— no closed trades yet —</td></tr>
+      <tr><td colspan="10" class="no-trades">— no closed trades yet —</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Incoming log -->
+<div class="section-label" style="margin-top:28px">Incoming webhook log <span style="color:var(--muted);font-size:10px">(last 100)</span></div>
+<div class="log-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Time</th>
+        <th>Strategy</th>
+        <th>Payload</th>
+        <th>Result / Error</th>
+      </tr>
+    </thead>
+    <tbody id="log-tbody">
+      <tr><td colspan="4" class="no-trades">— no logs yet —</td></tr>
     </tbody>
   </table>
 </div>
@@ -317,7 +347,7 @@ function renderOpen(openTrades) {
         <span class="open-ticker">${t.ticker}</span>
         <span class="open-dir ${t.direction}">${t.direction}</span>
         ${t.strategy ? `<span class="open-meta">${t.strategy}</span>` : ''}
-        <span class="open-meta">${t.qty} ct · entry ${fmtPrice(t.entryPrice)} · sl ${fmtPrice(t.slPrice)}</span>
+        <span class="open-meta">${t.qty} ct · entry ${fmtPrice(t.entryPrice)}</span>
         <span class="open-partials">${partialText}</span>
       </div>`;
   }).join('');
@@ -326,14 +356,10 @@ function renderOpen(openTrades) {
 function renderTable(closed) {
   const tbody = document.getElementById('trade-tbody');
   if (!closed.length) {
-    tbody.innerHTML = '<tr><td colspan="11" class="no-trades">— no closed trades yet —</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="10" class="no-trades">— no closed trades yet —</td></tr>';
     return;
   }
   tbody.innerHTML = closed.map((t, i) => {
-    const exitStr = t.exits.length
-      ? t.exits.map(e => `${e.tp} ${e.qty}@${fmtPrice(e.price)}`).join('<br>')
-      : '—';
-    const slNote = t.slHit ? ' <span class="badge sl">SL</span>' : '';
     return `<tr class="${t.result}">
       <td class="muted">${closed.length - i}</td>
       <td class="ticker">${t.ticker}</td>
@@ -341,11 +367,30 @@ function renderTable(closed) {
       <td class="dir-${t.direction}">${t.direction}</td>
       <td class="muted">${fmt(t.entryTime)}</td>
       <td>${fmtPrice(t.entryPrice)}</td>
+      <td>${fmtPrice(t.exitPrice)}</td>
       <td>${t.qty}</td>
-      <td class="muted">${fmtPrice(t.slPrice)}</td>
-      <td class="exits">${exitStr}${slNote}</td>
       <td class="${t.pnl >= 0 ? 'pnl-pos' : 'pnl-neg'}">${fmtPnl(t.pnl)}</td>
       <td><span class="badge ${t.result}">${t.result}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderLogs(logs) {
+  const tbody = document.getElementById('log-tbody');
+  if (!logs || !logs.length) {
+    tbody.innerHTML = '<tr><td colspan="4" class="no-trades">— no logs yet —</td></tr>';
+    return;
+  }
+  tbody.innerHTML = logs.map(l => {
+    const isErr = !!l.error;
+    const resultCell = isErr
+      ? `<td class="log-error">${l.error}</td>`
+      : `<td class="log-result">${l.result || '—'}</td>`;
+    return `<tr class="log-entry${isErr ? ' err' : ''}">
+      <td class="muted">${fmt(l.time)}</td>
+      <td class="muted">${l.strategy || '—'}</td>
+      <td class="log-payload">${JSON.stringify(l.payload)}</td>
+      ${resultCell}
     </tr>`;
   }).join('');
 }
@@ -359,6 +404,7 @@ async function load() {
     renderStats(closed, Object.keys(open).length);
     renderOpen(open);
     renderTable(closed);
+    renderLogs(data.logs || []);
     document.getElementById('last-updated').textContent =
       'last updated ' + new Date().toLocaleTimeString('en-CA', { hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false });
   } catch(e) {

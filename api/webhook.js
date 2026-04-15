@@ -1,11 +1,14 @@
 // api/webhook.js — Vercel serverless function
 // Receives TradingView webhook payloads and writes to trades.json in your GitHub repo
 
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
-const GITHUB_REPO  = process.env.GITHUB_REPO;   // e.g. "youruser/trade-log"
+const GITHUB_TOKEN  = process.env.GITHUB_TOKEN;
+const GITHUB_REPO   = process.env.GITHUB_REPO;   // e.g. "youruser/trade-log"
 const GITHUB_BRANCH = process.env.GITHUB_BRANCH || "main";
-const FILE_PATH    = "public/trades.json";
-const API_BASE     = "https://api.github.com";
+const FILE_PATH     = "public/trades.json";
+const API_BASE      = "https://api.github.com";
+
+// Point value per contract per point — update for other instruments
+const POINT_VALUES = { "MNQ1!": 2, "MGC1!": 10, "MES1!": 5, "NQ1!": 20, "ES1!": 50 };
 
 // ---------- GitHub helpers ----------
 
@@ -16,7 +19,7 @@ async function getFile() {
       Accept: "application/vnd.github+json",
     },
   });
-  if (res.status === 404) return { content: { openTrades: {}, closedTrades: [] }, sha: null };
+  if (res.status === 404) return { content: { openTrades: {}, closedTrades: [], logs: [] }, sha: null };
   const data = await res.json();
   const decoded = JSON.parse(Buffer.from(data.content, "base64").toString("utf8"));
   return { content: decoded, sha: data.sha };
@@ -42,34 +45,6 @@ async function saveFile(content, sha) {
   if (!res.ok) throw new Error(`GitHub write failed: ${res.status} ${await res.text()}`);
 }
 
-// ---------- P&L calculator ----------
-
-function calcPnl(trade) {
-  // MNQ point value = $2 per point per contract
-  const POINT_VALUE = 2;
-  let totalPnl = 0;
-  let exitedQty = 0;
-
-  for (const exit of trade.exits) {
-    const points = trade.direction === "buy"
-      ? exit.price - trade.entryPrice
-      : trade.entryPrice - exit.price;
-    totalPnl += points * exit.qty * POINT_VALUE;
-    exitedQty += exit.qty;
-  }
-
-  // Any remaining qty closed at SL
-  const remainingQty = trade.qty - exitedQty;
-  if (remainingQty > 0 && trade.slPrice) {
-    const points = trade.direction === "buy"
-      ? trade.slPrice - trade.entryPrice
-      : trade.entryPrice - trade.slPrice;
-    totalPnl += points * remainingQty * POINT_VALUE;
-  }
-
-  return Math.round(totalPnl * 100) / 100;
-}
-
 // ---------- Main handler ----------
 
 export default async function handler(req, res) {
@@ -88,68 +63,91 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: "Invalid JSON" });
   }
 
-  const { ticker, action, price, qty, sl, tp1, tp1_qty, tp2, tp2_qty, tp3, tp3_qty, tp } = payload;
+  const { ticker, action, price, qty } = payload;
   const strategy = (req.query.strategy || "").trim() || null;
+
+  if (!ticker || !action) return res.status(400).json({ error: "Missing ticker or action" });
 
   try {
     const { content, sha } = await getFile();
     const { openTrades, closedTrades } = content;
+    const logs = content.logs || [];
 
-    // ---- ENTRY ----
-    if (action === "buy" || action === "sell") {
-      const id = `${ticker}-${Date.now()}`;
-      openTrades[ticker] = {
-        id,
-        ticker,
-        strategy,
-        direction: action,
-        entryTime: new Date().toISOString(),
-        entryPrice: price,
-        qty,
-        slPrice: sl,
-        targets: { tp1, tp1_qty, tp2, tp2_qty, tp3, tp3_qty },
-        exits: [],
-        status: "open",
-      };
+    // Always log the raw incoming payload
+    const logEntry = {
+      time: new Date().toISOString(),
+      strategy,
+      payload,
+      result: null,
+      error: null,
+    };
 
-    // ---- TP EXIT (partial or full) ----
-    } else if (action === "exit") {
-      const trade = openTrades[ticker];
-      if (!trade) return res.status(400).json({ error: `No open trade for ${ticker}` });
+    let responseBody;
 
-      trade.exits.push({ tp, price, qty, time: new Date().toISOString() });
+    try {
+      // ---- ENTRY ----
+      if (action === "buy" || action === "sell") {
+        openTrades[ticker] = {
+          id: `${ticker}-${Date.now()}`,
+          ticker,
+          strategy,
+          direction: action,
+          entryTime: new Date().toISOString(),
+          entryPrice: price,
+          qty: qty || 1,
+          status: "open",
+        };
+        logEntry.result = `opened ${action} trade`;
 
-      const exitedQty = trade.exits.reduce((sum, e) => sum + e.qty, 0);
-      if (exitedQty >= trade.qty) {
-        // All qty filled — close the trade
-        trade.status = "closed";
+      // ---- EXIT (win or loss determined by price vs entry) ----
+      } else if (action === "exit") {
+        const trade = openTrades[ticker];
+        if (!trade) {
+          logEntry.error = `No open trade for ${ticker}`;
+          logs.unshift(logEntry);
+          if (logs.length > 100) logs.splice(100);
+          await saveFile({ openTrades, closedTrades, logs }, sha);
+          return res.status(400).json({ error: logEntry.error });
+        }
+
+        const pointValue = POINT_VALUES[ticker] || 1;
+        const points = trade.direction === "buy"
+          ? price - trade.entryPrice
+          : trade.entryPrice - price;
+        const pnl = Math.round(points * trade.qty * pointValue * 100) / 100;
+
+        trade.status    = "closed";
         trade.closeTime = new Date().toISOString();
-        trade.pnl = calcPnl(trade);
-        trade.result = trade.pnl >= 0 ? "win" : "loss";
+        trade.exitPrice = price;
+        trade.pnl       = pnl;
+        trade.result    = pnl >= 0 ? "win" : "loss";
+
         closedTrades.unshift(trade);
         delete openTrades[ticker];
+        logEntry.result = `closed trade — ${trade.result} — pnl: ${pnl}`;
+
+      } else {
+        logEntry.error = `Unknown action: ${action}`;
+        logs.unshift(logEntry);
+        if (logs.length > 100) logs.splice(100);
+        await saveFile({ openTrades, closedTrades, logs }, sha);
+        return res.status(400).json({ error: logEntry.error });
       }
 
-    // ---- SL HIT ----
-    } else if (action === "sl") {
-      const trade = openTrades[ticker];
-      if (!trade) return res.status(400).json({ error: `No open trade for ${ticker}` });
+      responseBody = { ok: true, action, ticker };
 
-      trade.status = "closed";
-      trade.closeTime = new Date().toISOString();
-      trade.slHit = true;
-      trade.slHitPrice = price || trade.slPrice;
-      trade.pnl = calcPnl(trade);
-      trade.result = "loss";
-      closedTrades.unshift(trade);
-      delete openTrades[ticker];
-
-    } else {
-      return res.status(400).json({ error: `Unknown action: ${action}` });
+    } catch (innerErr) {
+      logEntry.error = innerErr.message;
+      responseBody = { error: innerErr.message };
     }
 
-    await saveFile({ openTrades, closedTrades }, sha);
-    return res.status(200).json({ ok: true, action, ticker });
+    logs.unshift(logEntry);
+    if (logs.length > 100) logs.splice(100);
+    await saveFile({ openTrades, closedTrades, logs }, sha);
+
+    return logEntry.error
+      ? res.status(500).json(responseBody)
+      : res.status(200).json(responseBody);
 
   } catch (err) {
     console.error(err);
