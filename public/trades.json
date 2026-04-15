@@ -32,6 +32,26 @@
         }
       ],
       "status": "open"
+    },
+    "MGC1!": {
+      "id": "MGC1!-1776231303298",
+      "ticker": "MGC1!",
+      "strategy": "XiznitMGC",
+      "direction": "buy",
+      "entryTime": "2026-04-15T05:35:03.298Z",
+      "entryPrice": 4850.5,
+      "qty": 5,
+      "slPrice": 4834.5,
+      "targets": {
+        "tp1": 4853.7,
+        "tp1_qty": 1,
+        "tp2": 4858.5,
+        "tp2_qty": 2,
+        "tp3": 4861.7,
+        "tp3_qty": 2
+      },
+      "exits": [],
+      "status": "open"
     }
   },
   "closedTrades": [
