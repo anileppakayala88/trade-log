@@ -1,5 +1,26 @@
 {
-  "openTrades": {},
+  "openTrades": {
+    "MNQ1!": {
+      "id": "MNQ1!-1776225421474",
+      "ticker": "MNQ1!",
+      "strategy": "XiznitMNQ",
+      "direction": "buy",
+      "entryTime": "2026-04-15T03:57:01.474Z",
+      "entryPrice": 26021,
+      "qty": 5,
+      "slPrice": 25993.5,
+      "targets": {
+        "tp1": 26051.95,
+        "tp1_qty": 1,
+        "tp2": 26068.65,
+        "tp2_qty": 0,
+        "tp3": 26077,
+        "tp3_qty": 4
+      },
+      "exits": [],
+      "status": "open"
+    }
+  },
   "closedTrades": [
     {
       "id": "MNQ1!-1776215768415",
