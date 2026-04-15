@@ -32,8 +32,10 @@
         }
       ],
       "status": "open"
-    },
-    "MGC1!": {
+    }
+  },
+  "closedTrades": [
+    {
       "id": "MGC1!-1776231309627",
       "ticker": "MGC1!",
       "strategy": "XiznitMGC",
@@ -62,12 +64,19 @@
           "price": 4861.7,
           "qty": 2,
           "time": "2026-04-15T06:33:08.436Z"
+        },
+        {
+          "tp": "TP1",
+          "price": 4853.7,
+          "qty": 1,
+          "time": "2026-04-15T06:33:14.542Z"
         }
       ],
-      "status": "open"
-    }
-  },
-  "closedTrades": [
+      "status": "closed",
+      "closeTime": "2026-04-15T06:33:14.542Z",
+      "pnl": 83.2,
+      "result": "win"
+    },
     {
       "id": "MNQ1!-1776215768415",
       "ticker": "MNQ1!",
