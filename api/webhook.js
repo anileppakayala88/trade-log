@@ -4,7 +4,7 @@
 const GITHUB_TOKEN  = process.env.GITHUB_TOKEN;
 const GITHUB_REPO   = process.env.GITHUB_REPO;   // e.g. "youruser/trade-log"
 const GITHUB_BRANCH = process.env.GITHUB_BRANCH || "main";
-const FILE_PATH     = "public/trades.json";
+const FILE_PATH     = "docs/trades.json";
 const API_BASE      = "https://api.github.com";
 
 // Point value per contract per point — update for other instruments
