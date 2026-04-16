@@ -32,6 +32,19 @@
   ],
   "logs": [
     {
+      "time": "2026-04-16T08:03:58.684Z",
+      "strategy": "XiznitMNQ",
+      "payload": {
+        "ticker": "MNQ1!",
+        "action": "exit",
+        "tp": "TP3",
+        "qty": 4,
+        "price": 26503.5
+      },
+      "result": null,
+      "error": "No open trade for MNQ1!"
+    },
+    {
       "time": "2026-04-16T06:10:03.383Z",
       "strategy": "XiznitMNQ",
       "payload": {
