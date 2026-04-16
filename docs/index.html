@@ -339,16 +339,12 @@ function renderOpen(openTrades) {
     return;
   }
   el.innerHTML = trades.map(t => {
-    const partialText = t.exits.length
-      ? t.exits.map(e => `${e.tp} ${e.qty}@${fmtPrice(e.price)}`).join(' · ')
-      : 'no partials yet';
     return `
       <div class="open-trade-card">
         <span class="open-ticker">${t.ticker}</span>
         <span class="open-dir ${t.direction}">${t.direction}</span>
         ${t.strategy ? `<span class="open-meta">${t.strategy}</span>` : ''}
         <span class="open-meta">${t.qty} ct · entry ${fmtPrice(t.entryPrice)}</span>
-        <span class="open-partials">${partialText}</span>
       </div>`;
   }).join('');
 }
