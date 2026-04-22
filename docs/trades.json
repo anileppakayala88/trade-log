@@ -1,6 +1,7 @@
 {
-  "openTrades": {
-    "MNQ1!": {
+  "openTrades": {},
+  "closedTrades": [
+    {
       "id": "MNQ1!-1776835267616",
       "ticker": "MNQ1!",
       "strategy": "XiznitMNQ",
@@ -8,10 +9,12 @@
       "entryTime": "2026-04-22T05:21:07.616Z",
       "entryPrice": 26793.75,
       "qty": 5,
-      "status": "open"
-    }
-  },
-  "closedTrades": [
+      "status": "closed",
+      "closeTime": "2026-04-22T05:28:02.564Z",
+      "exitPrice": 26844.2,
+      "pnl": 504.5,
+      "result": "win"
+    },
     {
       "id": "MNQ1!-1776822667580",
       "ticker": "MNQ1!",
@@ -112,6 +115,19 @@
     }
   ],
   "logs": [
+    {
+      "time": "2026-04-22T05:28:02.564Z",
+      "strategy": "XiznitMNQ",
+      "payload": {
+        "ticker": "MNQ1!",
+        "action": "exit",
+        "tp": "TP1",
+        "qty": 1,
+        "price": 26844.2
+      },
+      "result": "closed trade — win — pnl: 504.5",
+      "error": null
+    },
     {
       "time": "2026-04-22T05:21:07.615Z",
       "strategy": "XiznitMNQ",
