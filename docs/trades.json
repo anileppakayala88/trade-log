@@ -186,6 +186,19 @@
   ],
   "logs": [
     {
+      "time": "2026-04-27T12:41:50.036Z",
+      "strategy": "XiznitMGC",
+      "payload": {
+        "ticker": "MGC1!",
+        "action": "exit",
+        "tp": "TP3",
+        "qty": 2,
+        "price": 4738.8
+      },
+      "result": null,
+      "error": "No open trade for MGC1!"
+    },
+    {
       "time": "2026-04-27T12:41:43.645Z",
       "strategy": "XiznitMGC",
       "payload": {
