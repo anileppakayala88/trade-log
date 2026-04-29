@@ -1,11 +1,11 @@
 {
   "openTrades": {
     "MGC1!": {
-      "id": "MGC1!-1777478701409",
+      "id": "MGC1!-1777478707909",
       "ticker": "MGC1!",
       "strategy": "XiznitMGC",
       "direction": "buy",
-      "entryTime": "2026-04-29T16:05:01.409Z",
+      "entryTime": "2026-04-29T16:05:07.909Z",
       "entryPrice": 4575.3,
       "qty": 5,
       "status": "open"
@@ -210,6 +210,25 @@
     }
   ],
   "logs": [
+    {
+      "time": "2026-04-29T16:05:07.909Z",
+      "strategy": "XiznitMGC",
+      "payload": {
+        "ticker": "MGC1!",
+        "action": "buy",
+        "price": 4575.3,
+        "qty": 5,
+        "sl": 4559.3,
+        "tp1": 4578.5,
+        "tp1_qty": 1,
+        "tp2": 4583.3,
+        "tp2_qty": 2,
+        "tp3": 4586.5,
+        "tp3_qty": 2
+      },
+      "result": "opened buy trade",
+      "error": null
+    },
     {
       "time": "2026-04-29T16:05:01.409Z",
       "strategy": "XiznitMGC",
