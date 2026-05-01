@@ -1,6 +1,7 @@
 {
-  "openTrades": {
-    "MGC1!": {
+  "openTrades": {},
+  "closedTrades": [
+    {
       "id": "MGC1!-1777612207545",
       "ticker": "MGC1!",
       "strategy": "XiznitMGC",
@@ -8,10 +9,12 @@
       "entryTime": "2026-05-01T05:10:07.545Z",
       "entryPrice": 4624,
       "qty": 5,
-      "status": "open"
-    }
-  },
-  "closedTrades": [
+      "status": "closed",
+      "closeTime": "2026-05-01T05:28:40.609Z",
+      "exitPrice": 4627.2,
+      "pnl": 160,
+      "result": "win"
+    },
     {
       "id": "MNQ1!-1777598589668",
       "ticker": "MNQ1!",
@@ -238,6 +241,19 @@
     }
   ],
   "logs": [
+    {
+      "time": "2026-05-01T05:28:40.609Z",
+      "strategy": "XiznitMGC",
+      "payload": {
+        "ticker": "MGC1!",
+        "action": "exit",
+        "tp": "TP1",
+        "qty": 1,
+        "price": 4627.2
+      },
+      "result": "closed trade — win — pnl: 160",
+      "error": null
+    },
     {
       "time": "2026-05-01T05:10:07.545Z",
       "strategy": "XiznitMGC",
