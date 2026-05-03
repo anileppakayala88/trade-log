@@ -345,6 +345,7 @@ function renderOpen(openTrades) {
         <span class="open-dir ${t.direction}">${t.direction}</span>
         ${t.strategy ? `<span class="open-meta">${t.strategy}</span>` : ''}
         <span class="open-meta">${t.qty} ct · entry ${fmtPrice(t.entryPrice)}</span>
+        ${t.exits && t.exits.length ? `<span class="open-partials">${t.exits.reduce((s,e)=>s+e.qty,0)}/${t.qty} filled</span>` : ''}
       </div>`;
   }).join('');
 }

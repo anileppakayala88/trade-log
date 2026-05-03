@@ -1,39 +1,31 @@
 // api/webhook.js — Vercel serverless function
-// Receives TradingView webhook payloads and writes to trades.json in your GitHub repo
+// Receives TradingView webhook payloads and writes to trades.json + journal.jsonl in your GitHub repo
 
 const GITHUB_TOKEN  = process.env.GITHUB_TOKEN;
 const GITHUB_REPO   = process.env.GITHUB_REPO;   // e.g. "youruser/trade-log"
 const GITHUB_BRANCH = process.env.GITHUB_BRANCH || "main";
-const FILE_PATH     = "docs/trades.json";
+const TRADES_PATH   = "docs/trades.json";
+const JOURNAL_PATH  = "docs/journal.jsonl";
 const API_BASE      = "https://api.github.com";
 
-// Point value per contract per point — update for other instruments
+// Point value per contract per point
 const POINT_VALUES = { "MNQ1!": 2, "MGC1!": 10, "MES1!": 5, "NQ1!": 20, "ES1!": 50 };
 
 // ---------- GitHub helpers ----------
 
-async function getFile() {
-  const res = await fetch(`${API_BASE}/repos/${GITHUB_REPO}/contents/${FILE_PATH}?ref=${GITHUB_BRANCH}`, {
-    headers: {
-      Authorization: `Bearer ${GITHUB_TOKEN}`,
-      Accept: "application/vnd.github+json",
-    },
+async function ghGet(path) {
+  const res = await fetch(`${API_BASE}/repos/${GITHUB_REPO}/contents/${path}?ref=${GITHUB_BRANCH}`, {
+    headers: { Authorization: `Bearer ${GITHUB_TOKEN}`, Accept: "application/vnd.github+json" },
   });
-  if (res.status === 404) return { content: { openTrades: {}, closedTrades: [], logs: [] }, sha: null };
+  if (res.status === 404) return { content: null, sha: null };
   const data = await res.json();
-  const decoded = JSON.parse(Buffer.from(data.content, "base64").toString("utf8"));
-  return { content: decoded, sha: data.sha };
+  return { content: Buffer.from(data.content, "base64").toString("utf8"), sha: data.sha };
 }
 
-async function saveFile(content, sha) {
-  const body = {
-    message: `trade update ${new Date().toISOString()}`,
-    content: Buffer.from(JSON.stringify(content, null, 2)).toString("base64"),
-    branch: GITHUB_BRANCH,
-  };
+async function ghPut(path, content, sha, message) {
+  const body = { message, content: Buffer.from(content).toString("base64"), branch: GITHUB_BRANCH };
   if (sha) body.sha = sha;
-
-  const res = await fetch(`${API_BASE}/repos/${GITHUB_REPO}/contents/${FILE_PATH}`, {
+  const res = await fetch(`${API_BASE}/repos/${GITHUB_REPO}/contents/${path}`, {
     method: "PUT",
     headers: {
       Authorization: `Bearer ${GITHUB_TOKEN}`,
@@ -42,7 +34,7 @@ async function saveFile(content, sha) {
     },
     body: JSON.stringify(body),
   });
-  if (!res.ok) throw new Error(`GitHub write failed: ${res.status} ${await res.text()}`);
+  if (!res.ok) throw new Error(`GitHub write failed (${path}): ${res.status} ${await res.text()}`);
 }
 
 // ---------- Main handler ----------
@@ -50,11 +42,9 @@ async function saveFile(content, sha) {
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-  // Optional: shared secret check
   const secret = process.env.WEBHOOK_SECRET;
-  if (secret && req.headers["x-webhook-secret"] !== secret) {
+  if (secret && req.headers["x-webhook-secret"] !== secret)
     return res.status(401).json({ error: "Unauthorized" });
-  }
 
   let payload;
   try {
@@ -69,68 +59,124 @@ export default async function handler(req, res) {
   if (!ticker || !action) return res.status(400).json({ error: "Missing ticker or action" });
 
   try {
-    const { content, sha } = await getFile();
-    const { openTrades, closedTrades } = content;
-    const logs = content.logs || [];
+    // Fetch trades.json and journal.jsonl in parallel
+    const [tradesResult, journalResult] = await Promise.all([
+      ghGet(TRADES_PATH),
+      ghGet(JOURNAL_PATH),
+    ]);
 
-    // Always log the raw incoming payload
-    const logEntry = {
-      time: new Date().toISOString(),
-      strategy,
-      payload,
-      result: null,
-      error: null,
-    };
+    const trades = tradesResult.content
+      ? JSON.parse(tradesResult.content)
+      : { openTrades: {}, closedTrades: [], logs: [] };
+    const tradesSha   = tradesResult.sha;
+    const journalText = (journalResult.content || "").trimEnd();
+    const journalSha  = journalResult.sha;
+
+    const { openTrades, closedTrades } = trades;
+    const logs = trades.logs || [];
+
+    const now = new Date().toISOString();
+    const logEntry = { time: now, strategy, payload, result: null, error: null };
+    const journalEntries = [];
 
     let responseBody;
 
     try {
       // ---- ENTRY ----
       if (action === "buy" || action === "sell") {
+        const tradeId = `${ticker}-${Date.now()}`;
         openTrades[ticker] = {
-          id: `${ticker}-${Date.now()}`,
+          id: tradeId,
           ticker,
           strategy,
           direction: action,
-          entryTime: new Date().toISOString(),
+          entryTime: now,
           entryPrice: price,
           qty: qty || 1,
+          exits: [],
           status: "open",
         };
         logEntry.result = `opened ${action} trade`;
 
-      // ---- EXIT (win or loss determined by price vs entry) ----
+        journalEntries.push({
+          signal_id:    tradeId,
+          timestamp:    now,
+          message_type: "new_signal",
+          source:       "TradingView",
+          strategy,
+          instrument:   ticker,
+          direction:    action.toUpperCase(),
+          order_type:   "market",
+          entry:        price,
+          qty:          qty || 1,
+          sl:           payload.sl   ?? null,
+          tp:           [payload.tp1,  payload.tp2,  payload.tp3 ].filter(v => v != null),
+          tp_qty:       [payload.tp1_qty, payload.tp2_qty, payload.tp3_qty].filter(v => v != null),
+          parse_status: "parsed",
+        });
+
+      // ---- EXIT ----
       } else if (action === "exit") {
         const trade = openTrades[ticker];
         if (!trade) {
           logEntry.error = `No open trade for ${ticker}`;
           logs.unshift(logEntry);
           if (logs.length > 100) logs.splice(100);
-          await saveFile({ openTrades, closedTrades, logs }, sha);
+          await ghPut(TRADES_PATH, JSON.stringify(trades, null, 2), tradesSha, `trade log ${now}`);
           return res.status(400).json({ error: logEntry.error });
         }
 
+        const exitQty = qty || 1;
+        if (!trade.exits) trade.exits = [];
+        trade.exits.push({ price, qty: exitQty, time: now, tp: payload.tp || null });
+
+        const filledQty = trade.exits.reduce((s, e) => s + e.qty, 0);
         const pointValue = POINT_VALUES[ticker] || 1;
-        const points = trade.direction === "buy"
-          ? price - trade.entryPrice
-          : trade.entryPrice - price;
-        const pnl = Math.round(points * trade.qty * pointValue * 100) / 100;
 
-        trade.status    = "closed";
-        trade.closeTime = new Date().toISOString();
-        trade.exitPrice = price;
-        trade.pnl       = pnl;
-        trade.result    = pnl >= 0 ? "win" : "loss";
+        if (filledQty >= trade.qty) {
+          // All contracts filled — calculate distributed P&L across each exit
+          const pnl = Math.round(
+            trade.exits.reduce((sum, e) => {
+              const pts = trade.direction === "buy"
+                ? e.price - trade.entryPrice
+                : trade.entryPrice - e.price;
+              return sum + pts * e.qty * pointValue;
+            }, 0) * 100
+          ) / 100;
 
-        closedTrades.unshift(trade);
-        delete openTrades[ticker];
-        logEntry.result = `closed trade — ${trade.result} — pnl: ${pnl}`;
+          trade.status    = "closed";
+          trade.closeTime = now;
+          trade.exitPrice = price;  // last exit price
+          trade.pnl       = pnl;
+          trade.result    = pnl >= 0 ? "win" : "loss";
+
+          closedTrades.unshift(trade);
+          delete openTrades[ticker];
+          logEntry.result = `closed trade — ${trade.result} — pnl: ${pnl} (${filledQty}/${trade.qty} qty)`;
+
+          journalEntries.push({
+            signal_id:    trade.id,
+            timestamp:    now,
+            message_type: "trade_update",
+            source:       "TradingView",
+            strategy,
+            instrument:   ticker,
+            update_type:  "exit",
+            entry_price:  trade.entryPrice,
+            exits:        trade.exits,
+            point_value:  pointValue,
+            pnl,
+            result:       trade.result,
+          });
+        } else {
+          logEntry.result = `partial exit ${exitQty} @ ${price} — filled ${filledQty}/${trade.qty}`;
+        }
 
       } else {
         logEntry.error = `Unknown action: ${action}`;
         logs.unshift(logEntry);
         if (logs.length > 100) logs.splice(100);
-        await saveFile({ openTrades, closedTrades, logs }, sha);
+        await ghPut(TRADES_PATH, JSON.stringify(trades, null, 2), tradesSha, `trade log ${now}`);
         return res.status(400).json({ error: logEntry.error });
       }
 
@@ -143,7 +189,16 @@ export default async function handler(req, res) {
 
     logs.unshift(logEntry);
     if (logs.length > 100) logs.splice(100);
-    await saveFile({ openTrades, closedTrades, logs }, sha);
+
+    const newLines = journalEntries.map(e => JSON.stringify(e)).join("\n");
+    const updatedJournal = journalText ? journalText + "\n" + newLines : newLines;
+
+    // Write trades.json and journal.jsonl in parallel (independent shas)
+    const writes = [ghPut(TRADES_PATH, JSON.stringify(trades, null, 2), tradesSha, `trade log ${now}`)];
+    if (journalEntries.length > 0)
+      writes.push(ghPut(JOURNAL_PATH, updatedJournal + "\n", journalSha, `journal ${now}`));
+
+    await Promise.all(writes);
 
     return logEntry.error
       ? res.status(500).json(responseBody)
