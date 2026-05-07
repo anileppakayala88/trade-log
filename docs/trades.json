@@ -560,6 +560,19 @@
   ],
   "logs": [
     {
+      "time": "2026-05-07T06:40:08.289Z",
+      "strategy": "XiznitMNQ",
+      "payload": {
+        "ticker": "XAUUSD",
+        "action": "exit",
+        "tp": "TP2",
+        "qty": 2,
+        "price": 4739.882
+      },
+      "result": null,
+      "error": "No open trade for XAUUSD"
+    },
+    {
       "time": "2026-05-07T06:40:04.863Z",
       "strategy": "XiznitMNQ",
       "payload": {
@@ -2104,19 +2117,6 @@
         "tp": "TP3",
         "qty": 2,
         "price": 4586.5
-      },
-      "result": null,
-      "error": "No open trade for MGC1!"
-    },
-    {
-      "time": "2026-04-29T16:37:47.421Z",
-      "strategy": "XiznitMGC",
-      "payload": {
-        "ticker": "MGC1!",
-        "action": "exit",
-        "tp": "TP2",
-        "qty": 2,
-        "price": 4583.3
       },
       "result": null,
       "error": "No open trade for MGC1!"
