@@ -452,20 +452,6 @@
       "exitPrice": 4627.2,
       "pnl": 160,
       "result": "win"
-    },
-    {
-      "id": "MNQ1!-1777598589668",
-      "ticker": "MNQ1!",
-      "strategy": "XiznitMNQ",
-      "direction": "buy",
-      "entryTime": "2026-05-01T01:23:09.668Z",
-      "entryPrice": 27642.75,
-      "qty": 5,
-      "status": "closed",
-      "closeTime": "2026-05-01T03:30:49.387Z",
-      "exitPrice": 27663.85,
-      "pnl": 211,
-      "result": "win"
     }
   ],
   "logs": [
