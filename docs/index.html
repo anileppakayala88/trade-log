@@ -191,6 +191,53 @@
   .badge.loss { background: var(--red-dim);   color: var(--red); }
   .badge.sl   { background: #2a1a0a; color: #f97316; }
 
+  /* ---- Filters ---- */
+  .filters {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+  }
+  .filter-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .filter-label {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  select, input[type="date"] {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 5px 8px;
+    border-radius: 3px;
+    outline: none;
+    cursor: pointer;
+  }
+  select:focus, input[type="date"]:focus { border-color: var(--green); }
+  input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.6); cursor: pointer; }
+  .filter-clear {
+    background: none;
+    border: 1px solid var(--border2);
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    letter-spacing: 0.06em;
+  }
+  .filter-clear:hover { border-color: var(--text); color: var(--text); }
+  .filter-count { font-size: 11px; color: var(--muted); }
+
   .no-trades {
     text-align: center;
     padding: 48px;
@@ -257,6 +304,24 @@
 
 <!-- Closed trades table -->
 <div class="section-label">Closed trades</div>
+<div class="filters">
+  <div class="filter-group">
+    <label class="filter-label">Symbol</label>
+    <select id="f-symbol" onchange="applyFilters()">
+      <option value="">All symbols</option>
+    </select>
+  </div>
+  <div class="filter-group">
+    <label class="filter-label">From</label>
+    <input type="date" id="f-from" oninput="applyFilters()">
+  </div>
+  <div class="filter-group">
+    <label class="filter-label">To</label>
+    <input type="date" id="f-to" oninput="applyFilters()">
+  </div>
+  <button class="filter-clear" onclick="clearFilters()">Clear</button>
+  <span class="filter-count" id="filter-count"></span>
+</div>
 <div class="table-wrap">
   <table>
     <thead>
@@ -300,6 +365,9 @@
 <div class="refresh-hint">auto-refreshes every 30s · <a onclick="load()">refresh now</a></div>
 
 <script>
+let allClosed = [];
+let currentOpenCount = 0;
+
 function fmt(ts) {
   if (!ts) return '—';
   const d = new Date(ts);
@@ -392,15 +460,50 @@ function renderLogs(logs) {
   }).join('');
 }
 
+function populateSymbols() {
+  const sel = document.getElementById('f-symbol');
+  const current = sel.value;
+  const tickers = [...new Set(allClosed.map(t => t.ticker))].sort();
+  sel.innerHTML = '<option value="">All symbols</option>' +
+    tickers.map(t => `<option value="${t}"${t === current ? ' selected' : ''}>${t}</option>`).join('');
+}
+
+function applyFilters() {
+  const sym  = document.getElementById('f-symbol').value;
+  const from = document.getElementById('f-from').value;
+  const to   = document.getElementById('f-to').value;
+
+  let filtered = allClosed;
+  if (sym)  filtered = filtered.filter(t => t.ticker === sym);
+  if (from) filtered = filtered.filter(t => t.entryTime >= from);
+  if (to)   filtered = filtered.filter(t => t.entryTime <= to + 'T23:59:59.999Z');
+
+  const countEl = document.getElementById('filter-count');
+  countEl.textContent = (sym || from || to)
+    ? `${filtered.length} of ${allClosed.length} trades`
+    : '';
+
+  renderStats(filtered, currentOpenCount);
+  renderTable(filtered);
+}
+
+function clearFilters() {
+  document.getElementById('f-symbol').value = '';
+  document.getElementById('f-from').value   = '';
+  document.getElementById('f-to').value     = '';
+  applyFilters();
+}
+
 async function load() {
   try {
     const res  = await fetch('trades.json?t=' + Date.now());
     const data = await res.json();
-    const closed = data.closedTrades || [];
-    const open   = data.openTrades   || {};
-    renderStats(closed, Object.keys(open).length);
+    allClosed = data.closedTrades || [];
+    const open = data.openTrades || {};
+    currentOpenCount = Object.keys(open).length;
+    populateSymbols();
+    applyFilters();
     renderOpen(open);
-    renderTable(closed);
     renderLogs(data.logs || []);
     document.getElementById('last-updated').textContent =
       'last updated ' + new Date().toLocaleTimeString('en-CA', { hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false });
