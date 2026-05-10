@@ -438,20 +438,6 @@
       "exitPrice": 4587.489,
       "pnl": 3.83,
       "result": "win"
-    },
-    {
-      "id": "MGC1!-1777612207545",
-      "ticker": "MGC1!",
-      "strategy": "XiznitMGC",
-      "direction": "buy",
-      "entryTime": "2026-05-01T05:10:07.545Z",
-      "entryPrice": 4624,
-      "qty": 5,
-      "status": "closed",
-      "closeTime": "2026-05-01T05:28:40.609Z",
-      "exitPrice": 4627.2,
-      "pnl": 160,
-      "result": "win"
     }
   ],
   "logs": [
