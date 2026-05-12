@@ -193,12 +193,14 @@ export default async function handler(req, res) {
     const newLines = journalEntries.map(e => JSON.stringify(e)).join("\n");
     const updatedJournal = journalText ? journalText + "\n" + newLines : newLines;
 
-    // Write trades.json and journal.jsonl in parallel (independent shas)
-    const writes = [ghPut(TRADES_PATH, JSON.stringify(trades, null, 2), tradesSha, `trade log ${now}`)];
-    if (journalEntries.length > 0)
-      writes.push(ghPut(JOURNAL_PATH, updatedJournal + "\n", journalSha, `journal ${now}`));
+    // trades.json is critical — must succeed
+    await ghPut(TRADES_PATH, JSON.stringify(trades, null, 2), tradesSha, `trade log ${now}`);
 
-    await Promise.all(writes);
+    // journal.jsonl is best-effort — don't fail the request if it errors
+    if (journalEntries.length > 0) {
+      ghPut(JOURNAL_PATH, updatedJournal + "\n", journalSha, `journal ${now}`)
+        .catch(err => console.error("journal write failed:", err.message));
+    }
 
     return logEntry.error
       ? res.status(500).json(responseBody)
