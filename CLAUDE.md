@@ -116,6 +116,31 @@ Located in `calcPnl()` in `api/webhook.js`.
 | `GITHUB_REPO` | e.g. `youruser/trade-log` |
 | `GITHUB_BRANCH` | default `main` |
 | `WEBHOOK_SECRET` | Optional. If set, requests must include `x-webhook-secret` header |
+| `TELEGRAM_BOT_TOKEN` | Bot token that posts to the xauusd_bot Telegram channel |
+| `TELEGRAM_CHANNEL_ID` | `-1003720726531` — the xauusd_bot channel marked ID |
+
+---
+
+## Telegram integration (Phase 4)
+
+After writing to GitHub, `webhook.js` posts a structured JSON message to the xauusd_bot Telegram channel. The Telegram Trader bot reads this channel via Telethon and routes the signal to MT5.
+
+**Entry posted to Telegram:**
+```json
+{"tv":"entry","id":"XAUUSD-1748000000","ticker":"XAUUSD","action":"buy","price":4554.29,"sl":4552.31,"tp1":4568.586,"tp2":4578.602,"tp3":4582.358}
+```
+
+**TP exit posted to Telegram:**
+```json
+{"tv":"exit","id":"XAUUSD-1748000000","ticker":"XAUUSD","action":"exit","tp":"TP1","price":4568.586}
+```
+
+**SL hit posted to Telegram:**
+```json
+{"tv":"exit","id":"XAUUSD-1748000000","ticker":"XAUUSD","action":"sl","price":4552.31}
+```
+
+`sendTelegram()` is best-effort — errors are logged but never fail the HTTP response. If `TELEGRAM_BOT_TOKEN` or `TELEGRAM_CHANNEL_ID` are not set, the function returns immediately.
 
 ---
 
@@ -127,6 +152,8 @@ Located in `calcPnl()` in `api/webhook.js`.
 - **SL closes immediately.** A `sl` payload closes the trade regardless of how many partials have already filled.
 - **trades.json is read-modify-write via GitHub Contents API.** The `sha` from the GET must be included in the PUT, otherwise GitHub rejects the write with a 409.
 - **Dashboard polls every 30 seconds.** It appends `?t=Date.now()` to bust CDN cache on `trades.json`.
+- **SL payloads use `action="sl"`, not `action="exit"`.** TradingView sends `{"action":"sl",...}` for stop-loss hits. This is handled by a separate `else if (action === "sl")` block — it settles any remaining qty at the SL price, calculates final P&L, and posts the Telegram SL notification.
+- **Telegram notification is fire-and-forget.** `sendTelegram()` is called before `await ghPut(...)` on entry so it doesn't block GitHub writes, and without `await` on exit to keep the response fast.
 
 ---
 
