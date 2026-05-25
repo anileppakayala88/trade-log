@@ -142,7 +142,7 @@ export default async function handler(req, res) {
           parse_status: "parsed",
         });
 
-      // ---- EXIT ----
+      // ---- EXIT (TP) ----
       } else if (action === "exit") {
         const trade = openTrades[ticker];
         if (!trade) {
@@ -204,6 +204,58 @@ export default async function handler(req, res) {
         } else {
           logEntry.result = `partial exit ${exitQty} @ ${price} — filled ${filledQty}/${trade.qty}`;
         }
+
+      // ---- SL HIT ----
+      } else if (action === "sl") {
+        const trade = openTrades[ticker];
+        if (!trade) {
+          logEntry.error = `No open trade for ${ticker}`;
+          logs.unshift(logEntry);
+          if (logs.length > 100) logs.splice(100);
+          await ghPut(TRADES_PATH, JSON.stringify(trades, null, 2), tradesSha, `trade log ${now}`);
+          return res.status(400).json({ error: logEntry.error });
+        }
+
+        const pointValue = POINT_VALUES[ticker] || 1;
+        const slPrice = price || trade.entryPrice;
+        const remainingQty = trade.qty - trade.exits.reduce((s, e) => s + e.qty, 0);
+        if (remainingQty > 0) trade.exits.push({ price: slPrice, qty: remainingQty, time: now, tp: "SL" });
+
+        const pnl = Math.round(
+          trade.exits.reduce((sum, e) => {
+            const pts = trade.direction === "buy"
+              ? e.price - trade.entryPrice
+              : trade.entryPrice - e.price;
+            return sum + pts * e.qty * pointValue;
+          }, 0) * 100
+        ) / 100;
+
+        trade.status    = "closed";
+        trade.closeTime = now;
+        trade.exitPrice = slPrice;
+        trade.pnl       = pnl;
+        trade.result    = "loss";
+
+        closedTrades.unshift(trade);
+        delete openTrades[ticker];
+        logEntry.result = `SL hit — pnl: ${pnl}`;
+
+        sendTelegram({ tv: "exit", id: trade.id, ticker, action: "sl", price: slPrice });
+
+        journalEntries.push({
+          signal_id:    trade.id,
+          timestamp:    now,
+          message_type: "trade_update",
+          source:       "TradingView",
+          strategy,
+          instrument:   ticker,
+          update_type:  "sl_hit",
+          entry_price:  trade.entryPrice,
+          exits:        trade.exits,
+          point_value:  pointValue,
+          pnl,
+          result:       "loss",
+        });
 
       } else {
         logEntry.error = `Unknown action: ${action}`;
