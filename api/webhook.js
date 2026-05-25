@@ -8,6 +8,22 @@ const TRADES_PATH   = "docs/trades.json";
 const JOURNAL_PATH  = "docs/journal.jsonl";
 const API_BASE      = "https://api.github.com";
 
+const TG_TOKEN      = process.env.TELEGRAM_BOT_TOKEN;
+const TG_CHANNEL    = process.env.TELEGRAM_CHANNEL_ID;  // e.g. "-1003720726531"
+
+async function sendTelegram(obj) {
+  if (!TG_TOKEN || !TG_CHANNEL) return;
+  try {
+    await fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ chat_id: TG_CHANNEL, text: JSON.stringify(obj) }),
+    });
+  } catch (err) {
+    console.error("Telegram send failed:", err.message);
+  }
+}
+
 // Point value per contract per point
 const POINT_VALUES = { "MNQ1!": 2, "MGC1!": 10, "MES1!": 5, "NQ1!": 20, "ES1!": 50 };
 
@@ -98,6 +114,17 @@ export default async function handler(req, res) {
         };
         logEntry.result = `opened ${action} trade`;
 
+        // Notify Telegram bot (best-effort — after GitHub write)
+        sendTelegram({
+          tv: "entry", id: tradeId, ticker,
+          action,
+          price,
+          sl:  payload.sl  ?? undefined,
+          tp1: payload.tp1 ?? undefined,
+          tp2: payload.tp2 ?? undefined,
+          tp3: payload.tp3 ?? undefined,
+        });
+
         journalEntries.push({
           signal_id:    tradeId,
           timestamp:    now,
@@ -153,6 +180,12 @@ export default async function handler(req, res) {
           closedTrades.unshift(trade);
           delete openTrades[ticker];
           logEntry.result = `closed trade — ${trade.result} — pnl: ${pnl} (${filledQty}/${trade.qty} qty)`;
+
+          // Notify Telegram bot (best-effort)
+          const tgAction = payload.tp ? "exit" : "sl";
+          const tgMsg = { tv: "exit", id: trade.id, ticker, action: tgAction, price };
+          if (payload.tp) tgMsg.tp = payload.tp;
+          sendTelegram(tgMsg);
 
           journalEntries.push({
             signal_id:    trade.id,
