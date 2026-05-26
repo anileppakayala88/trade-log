@@ -287,6 +287,36 @@ export default async function handler(req, res) {
         .catch(err => console.error("journal write failed:", err.message));
     }
 
+    // Forward signal to MT5 bot via Telegram channel — fire-and-forget
+    const tgToken   = process.env.TELEGRAM_BOT_TOKEN;
+    const tgChannel = process.env.TELEGRAM_CHANNEL_ID;
+    if (tgToken && tgChannel && !logEntry.error) {
+      const isEntry = action === "buy" || action === "sell";
+      const tvMsg = isEntry
+        ? {
+            tv: "entry",
+            id: openTrades[ticker]?.id,
+            ticker, action,
+            price,
+            sl:  payload.sl  ?? null,
+            tp1: payload.tp1 ?? null,
+            tp2: payload.tp2 ?? null,
+            tp3: payload.tp3 ?? null,
+          }
+        : {
+            tv: "exit",
+            id: trades.closedTrades[0]?.id ?? `${ticker}-0`,
+            ticker, action,
+            tp:    payload.tp ?? null,
+            price: price ?? null,
+          };
+      fetch(`https://api.telegram.org/bot${tgToken}/sendMessage`, {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ chat_id: tgChannel, text: JSON.stringify(tvMsg) }),
+      }).catch(err => console.error("Telegram forward failed:", err.message));
+    }
+
     return logEntry.error
       ? res.status(500).json(responseBody)
       : res.status(200).json(responseBody);
