@@ -8,7 +8,14 @@
       "entryTime": "2026-05-29T01:20:02.671Z",
       "entryPrice": 4518.54,
       "qty": 5,
-      "exits": [],
+      "exits": [
+        {
+          "price": 4526.496,
+          "qty": 2,
+          "time": "2026-05-29T09:13:28.865Z",
+          "tp": "TP1"
+        }
+      ],
       "status": "open"
     }
   },
@@ -1087,6 +1094,19 @@
     }
   ],
   "logs": [
+    {
+      "time": "2026-05-29T09:13:28.865Z",
+      "strategy": "XiznitMNQ",
+      "payload": {
+        "ticker": "XAUUSD",
+        "action": "exit",
+        "tp": "TP1",
+        "qty": 2,
+        "price": 4526.496
+      },
+      "result": "partial exit 2 @ 4526.496 — filled 2/5",
+      "error": null
+    },
     {
       "time": "2026-05-29T01:20:02.671Z",
       "strategy": "XiznitMNQ",
@@ -2632,25 +2652,6 @@
         "price": 4685.247
       },
       "result": "partial exit 2 @ 4685.247 — filled 2/5",
-      "error": null
-    },
-    {
-      "time": "2026-05-14T15:00:19.009Z",
-      "strategy": "XiznitMNQ",
-      "payload": {
-        "ticker": "XAUUSD",
-        "action": "sell",
-        "price": 4689.83,
-        "qty": 5,
-        "sl": 4718.93,
-        "tp1": 4685.247,
-        "tp1_qty": 2,
-        "tp2": 4664.519,
-        "tp2_qty": 2,
-        "tp3": 4656.746,
-        "tp3_qty": 1
-      },
-      "result": "opened sell trade",
       "error": null
     }
   ]
