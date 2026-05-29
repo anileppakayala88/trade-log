@@ -146,14 +146,14 @@ After writing to GitHub, `webhook.js` posts a structured JSON message to the xau
 
 ## Key behaviours and edge cases
 
-- **One open trade per ticker at a time.** A new entry payload for a ticker that already has an open trade will overwrite it. If you need concurrent trades on the same instrument, the `openTrades` key needs to change from `ticker` to `id`.
+- **Multiple concurrent trades per ticker are supported.** `openTrades` is keyed by `tradeId` (not `ticker`). Exit/SL handlers call `findOpenTrade(openTrades, ticker)` which returns the most-recently-opened trade for that ticker (LIFO). This prevents concurrent XAUUSD signals from overwriting each other.
 - **Partial fills accumulate.** Exit payloads are pushed onto `trade.exits[]`. The trade only closes when `sum(exits[].qty) >= trade.qty`.
 - **tp2_qty: 0 is valid.** TP2 with zero qty means that level is skipped — no exit payload will arrive for it and that's fine.
 - **SL closes immediately.** A `sl` payload closes the trade regardless of how many partials have already filled.
 - **trades.json is read-modify-write via GitHub Contents API.** The `sha` from the GET must be included in the PUT, otherwise GitHub rejects the write with a 409.
 - **Dashboard polls every 30 seconds.** It appends `?t=Date.now()` to bust CDN cache on `trades.json`.
 - **SL payloads use `action="sl"`, not `action="exit"`.** TradingView sends `{"action":"sl",...}` for stop-loss hits. This is handled by a separate `else if (action === "sl")` block — it settles any remaining qty at the SL price, calculates final P&L, and posts the Telegram SL notification.
-- **Telegram notification is fire-and-forget.** `sendTelegram()` is called before `await ghPut(...)` on entry so it doesn't block GitHub writes, and without `await` on exit to keep the response fast.
+- **Telegram notification is fire-and-forget.** `sendTelegram()` is called in each action handler (entry/exit/sl) before `await ghPut(...)`. There is no second Telegram send block — it was removed to prevent duplicate messages.
 
 ---
 
