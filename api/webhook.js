@@ -53,6 +53,13 @@ async function ghPut(path, content, sha, message) {
   if (!res.ok) throw new Error(`GitHub write failed (${path}): ${res.status} ${await res.text()}`);
 }
 
+// Find the most-recently-opened trade for a ticker (LIFO — matches the strategy's last entry)
+function findOpenTrade(openTrades, ticker) {
+  return Object.values(openTrades)
+    .filter(t => t.ticker === ticker && t.status === "open")
+    .sort((a, b) => new Date(b.entryTime) - new Date(a.entryTime))[0] || null;
+}
+
 // ---------- Main handler ----------
 
 export default async function handler(req, res) {
@@ -101,7 +108,7 @@ export default async function handler(req, res) {
       // ---- ENTRY ----
       if (action === "buy" || action === "sell") {
         const tradeId = `${ticker}-${Date.now()}`;
-        openTrades[ticker] = {
+        openTrades[tradeId] = {
           id: tradeId,
           ticker,
           strategy,
@@ -144,7 +151,7 @@ export default async function handler(req, res) {
 
       // ---- EXIT (TP) ----
       } else if (action === "exit") {
-        const trade = openTrades[ticker];
+        const trade = findOpenTrade(openTrades, ticker);
         if (!trade) {
           logEntry.error = `No open trade for ${ticker}`;
           logs.unshift(logEntry);
@@ -178,7 +185,7 @@ export default async function handler(req, res) {
           trade.result    = pnl >= 0 ? "win" : "loss";
 
           closedTrades.unshift(trade);
-          delete openTrades[ticker];
+          delete openTrades[trade.id];
           logEntry.result = `closed trade — ${trade.result} — pnl: ${pnl} (${filledQty}/${trade.qty} qty)`;
 
           // Notify Telegram bot (best-effort)
@@ -207,7 +214,7 @@ export default async function handler(req, res) {
 
       // ---- SL HIT ----
       } else if (action === "sl") {
-        const trade = openTrades[ticker];
+        const trade = findOpenTrade(openTrades, ticker);
         if (!trade) {
           logEntry.error = `No open trade for ${ticker}`;
           logs.unshift(logEntry);
@@ -237,7 +244,7 @@ export default async function handler(req, res) {
         trade.result    = "loss";
 
         closedTrades.unshift(trade);
-        delete openTrades[ticker];
+        delete openTrades[trade.id];
         logEntry.result = `SL hit — pnl: ${pnl}`;
 
         sendTelegram({ tv: "exit", id: trade.id, ticker, action: "sl", price: slPrice });
@@ -285,36 +292,6 @@ export default async function handler(req, res) {
     if (journalEntries.length > 0) {
       ghPut(JOURNAL_PATH, updatedJournal + "\n", journalSha, `journal ${now}`)
         .catch(err => console.error("journal write failed:", err.message));
-    }
-
-    // Forward signal to MT5 bot via Telegram channel — fire-and-forget
-    const tgToken   = process.env.TELEGRAM_BOT_TOKEN;
-    const tgChannel = process.env.TELEGRAM_CHANNEL_ID;
-    if (tgToken && tgChannel && !logEntry.error) {
-      const isEntry = action === "buy" || action === "sell";
-      const tvMsg = isEntry
-        ? {
-            tv: "entry",
-            id: openTrades[ticker]?.id,
-            ticker, action,
-            price,
-            sl:  payload.sl  ?? null,
-            tp1: payload.tp1 ?? null,
-            tp2: payload.tp2 ?? null,
-            tp3: payload.tp3 ?? null,
-          }
-        : {
-            tv: "exit",
-            id: trades.closedTrades[0]?.id ?? `${ticker}-0`,
-            ticker, action,
-            tp:    payload.tp ?? null,
-            price: price ?? null,
-          };
-      fetch(`https://api.telegram.org/bot${tgToken}/sendMessage`, {
-        method:  "POST",
-        headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify({ chat_id: tgChannel, text: JSON.stringify(tvMsg) }),
-      }).catch(err => console.error("Telegram forward failed:", err.message));
     }
 
     return logEntry.error
