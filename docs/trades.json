@@ -94,6 +94,17 @@
       "qty": 5,
       "exits": [],
       "status": "open"
+    },
+    "XAUUSD-1780449602195": {
+      "id": "XAUUSD-1780449602195",
+      "ticker": "XAUUSD",
+      "strategy": "XiznitMNQ",
+      "direction": "sell",
+      "entryTime": "2026-06-03T01:20:02.195Z",
+      "entryPrice": 4469.71,
+      "qty": 5,
+      "exits": [],
+      "status": "open"
     }
   },
   "closedTrades": [
@@ -1307,6 +1318,25 @@
     }
   ],
   "logs": [
+    {
+      "time": "2026-06-03T01:20:02.195Z",
+      "strategy": "XiznitMNQ",
+      "payload": {
+        "ticker": "XAUUSD",
+        "action": "sell",
+        "price": 4469.71,
+        "qty": 5,
+        "sl": 4492.22,
+        "tp1": 4462.957,
+        "tp1_qty": 2,
+        "tp2": 4444.949,
+        "tp2_qty": 2,
+        "tp3": 4438.196,
+        "tp3_qty": 1
+      },
+      "result": "opened sell trade",
+      "error": null
+    },
     {
       "time": "2026-06-02T16:40:05.893Z",
       "strategy": "XiznitMNQ",
@@ -2870,19 +2900,6 @@
         "price": 4424.437
       },
       "result": "closed trade — win — pnl: 166.03 (5/5 qty)",
-      "error": null
-    },
-    {
-      "time": "2026-05-20T04:00:42.384Z",
-      "strategy": "XiznitMNQ",
-      "payload": {
-        "ticker": "XAUUSD",
-        "action": "exit",
-        "tp": "TP3",
-        "qty": 1,
-        "price": 4412.578
-      },
-      "result": "partial exit 1 @ 4412.578 — filled 3/5",
       "error": null
     }
   ]
