@@ -8,10 +8,11 @@ const TRADES_PATH   = "docs/trades.json";
 const JOURNAL_PATH  = "docs/journal.jsonl";
 const API_BASE      = "https://api.github.com";
 
-const TG_TOKEN      = process.env.TELEGRAM_BOT_TOKEN;
-const TG_CHANNEL    = process.env.TELEGRAM_CHANNEL_ID;  // e.g. "-1003720726531"
+const TG_TOKEN   = process.env.TELEGRAM_BOT_TOKEN;
+const TG_CHANNEL = process.env.TELEGRAM_CHANNEL_ID;  // e.g. "-1003720726531"
 
-async function sendTelegram(obj) {
+// Sends raw JSON signal to the fixed MT5-routing channel (xauusd_bot)
+async function sendTelegramJson(obj) {
   if (!TG_TOKEN || !TG_CHANNEL) return;
   try {
     await fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
@@ -26,6 +27,21 @@ async function sendTelegram(obj) {
 
 // Point value per contract per point
 const POINT_VALUES = { "MNQ1!": 2, "MGC1!": 10, "MES1!": 5, "NQ1!": 20, "ES1!": 50 };
+
+// Telegram routing: strategy name → chat_id env var
+const TELEGRAM_CHANNEL_MAP = {
+  "qt-amdx":  process.env.TELEGRAM_CHAT_QT_AMDX,
+  "project2": process.env.TELEGRAM_CHAT_PROJECT2,
+  "project3": process.env.TELEGRAM_CHAT_PROJECT3,
+};
+
+function strategyKey(name) {
+  return (name || "").toLowerCase().replace(/[\s_]+/g, "-");
+}
+
+function getTelegramChatId(strategy) {
+  return TELEGRAM_CHANNEL_MAP[strategyKey(strategy)] || process.env.TELEGRAM_CHAT_DEFAULT || null;
+}
 
 // ---------- GitHub helpers ----------
 
@@ -60,6 +76,97 @@ function findOpenTrade(openTrades, ticker) {
     .sort((a, b) => new Date(b.entryTime) - new Date(a.entryTime))[0] || null;
 }
 
+// ---------- Screenshot / Telegram helpers ----------
+
+async function captureScreenshot(chartUrl) {
+  if (!process.env.SCREENSHOTONE_KEY || !chartUrl) return null;
+  try {
+    const params = new URLSearchParams({
+      access_key:            process.env.SCREENSHOTONE_KEY,
+      url:                   chartUrl,
+      viewport_width:        1440,
+      viewport_height:       900,
+      full_page:             false,
+      format:                "jpg",
+      image_quality:         85,
+      delay:                 3,
+      block_ads:             true,
+      block_cookie_banners:  true,
+    });
+    const res = await fetch(`https://api.screenshotone.com/take?${params}`);
+    if (!res.ok) return null;
+    const base64 = Buffer.from(await res.arrayBuffer()).toString("base64");
+    return { base64, mimeType: "image/jpeg" };
+  } catch {
+    return null;
+  }
+}
+
+async function uploadScreenshotToGitHub(base64, filename) {
+  try {
+    const path = `docs/screenshots/${filename}`;
+    const res = await fetch(`${API_BASE}/repos/${GITHUB_REPO}/contents/${path}`, {
+      method: "PUT",
+      headers: {
+        Authorization:    `Bearer ${GITHUB_TOKEN}`,
+        Accept:           "application/vnd.github+json",
+        "Content-Type":   "application/json",
+      },
+      body: JSON.stringify({ message: `screenshot ${filename}`, content: base64, branch: GITHUB_BRANCH }),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.content?.download_url || null;
+  } catch {
+    return null;
+  }
+}
+
+async function sendTelegram(chatId, caption, screenshotUrl) {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  if (!token || !chatId) return;
+  try {
+    const base = `https://api.telegram.org/bot${token}`;
+    if (screenshotUrl) {
+      await fetch(`${base}/sendPhoto`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ chat_id: chatId, photo: screenshotUrl, caption, parse_mode: "HTML" }),
+      });
+    } else {
+      await fetch(`${base}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ chat_id: chatId, text: caption, parse_mode: "HTML" }),
+      });
+    }
+  } catch (err) {
+    console.error("sendTelegram failed:", err.message);
+  }
+}
+
+function buildCaption(action, ticker, price, strategy, payload, pnl, result) {
+  let emoji;
+  if (action === "buy")        emoji = "🟢";
+  else if (action === "sell")  emoji = "🔴";
+  else if (pnl !== undefined)  emoji = result === "win" ? "✅" : "❌";
+  else                         emoji = "🔁";
+
+  const lines = [`${emoji} <b>${action.toUpperCase()} ${ticker}</b>`];
+  if (strategy)            lines.push(`Strategy: ${strategy}`);
+  lines.push(`Price: ${price}`);
+  if (payload.sl != null)  lines.push(`SL: ${payload.sl}`);
+  const tps = [payload.tp1, payload.tp2, payload.tp3].filter(v => v != null);
+  if (tps.length)          lines.push(`TP: ${tps.join(" / ")}`);
+  if (payload.qty != null) lines.push(`Qty: ${payload.qty}`);
+  if (pnl !== undefined) {
+    const sign = pnl >= 0 ? "+" : "";
+    lines.push(`PnL: <b>${sign}$${pnl}</b>`);
+  }
+  lines.push(`<i>${new Date().toUTCString()}</i>`);
+  return lines.join("\n");
+}
+
 // ---------- Main handler ----------
 
 export default async function handler(req, res) {
@@ -77,7 +184,8 @@ export default async function handler(req, res) {
   }
 
   const { ticker, action, price, qty } = payload;
-  const strategy = (req.query.strategy || "").trim() || null;
+  const strategy  = (req.query.strategy || "").trim() || null;
+  const chartUrl  = payload.chart_url || req.query.chart_url || null;
 
   if (!ticker || !action) return res.status(400).json({ error: "Missing ticker or action" });
 
@@ -103,6 +211,7 @@ export default async function handler(req, res) {
     const journalEntries = [];
 
     let responseBody;
+    let finalPnl, finalResult;
 
     try {
       // ---- ENTRY ----
@@ -121,8 +230,8 @@ export default async function handler(req, res) {
         };
         logEntry.result = `opened ${action} trade`;
 
-        // Notify Telegram bot (best-effort — after GitHub write)
-        sendTelegram({
+        // Notify MT5-routing channel (best-effort)
+        sendTelegramJson({
           tv: "entry", id: tradeId, ticker,
           action,
           price,
@@ -183,16 +292,18 @@ export default async function handler(req, res) {
           trade.exitPrice = price;  // last exit price
           trade.pnl       = pnl;
           trade.result    = pnl >= 0 ? "win" : "loss";
+          finalPnl        = pnl;
+          finalResult     = trade.result;
 
           closedTrades.unshift(trade);
           delete openTrades[trade.id];
           logEntry.result = `closed trade — ${trade.result} — pnl: ${pnl} (${filledQty}/${trade.qty} qty)`;
 
-          // Notify Telegram bot (best-effort)
+          // Notify MT5-routing channel (best-effort)
           const tgAction = payload.tp ? "exit" : "sl";
           const tgMsg = { tv: "exit", id: trade.id, ticker, action: tgAction, price };
           if (payload.tp) tgMsg.tp = payload.tp;
-          sendTelegram(tgMsg);
+          sendTelegramJson(tgMsg);
 
           journalEntries.push({
             signal_id:    trade.id,
@@ -242,12 +353,14 @@ export default async function handler(req, res) {
         trade.exitPrice = slPrice;
         trade.pnl       = pnl;
         trade.result    = "loss";
+        finalPnl        = pnl;
+        finalResult     = trade.result;
 
         closedTrades.unshift(trade);
         delete openTrades[trade.id];
         logEntry.result = `SL hit — pnl: ${pnl}`;
 
-        sendTelegram({ tv: "exit", id: trade.id, ticker, action: "sl", price: slPrice });
+        sendTelegramJson({ tv: "exit", id: trade.id, ticker, action: "sl", price: slPrice });
 
         journalEntries.push({
           signal_id:    trade.id,
@@ -293,6 +406,30 @@ export default async function handler(req, res) {
       ghPut(JOURNAL_PATH, updatedJournal + "\n", journalSha, `journal ${now}`)
         .catch(err => console.error("journal write failed:", err.message));
     }
+
+    // fire-and-forget: formatted Telegram notification per strategy channel (never blocks the response)
+    (async () => {
+      try {
+        const chatId = getTelegramChatId(strategy);
+        if (!chatId && !process.env.SCREENSHOTONE_KEY) return;
+
+        const caption = buildCaption(action, ticker, price, strategy, payload, finalPnl, finalResult);
+
+        let screenshotUrl = null;
+        const shouldCapture = (action === "buy" || action === "sell" || finalPnl !== undefined) && chartUrl;
+        if (shouldCapture) {
+          const shot = await captureScreenshot(chartUrl);
+          if (shot) {
+            const filename = `${ticker}-${Date.now()}.jpg`;
+            screenshotUrl = await uploadScreenshotToGitHub(shot.base64, filename);
+          }
+        }
+
+        await sendTelegram(chatId, caption, screenshotUrl);
+      } catch (err) {
+        console.error("telegram block failed:", err.message);
+      }
+    })();
 
     return logEntry.error
       ? res.status(500).json(responseBody)
