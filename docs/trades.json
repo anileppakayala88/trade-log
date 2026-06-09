@@ -141,6 +141,17 @@
       "qty": 1,
       "exits": [],
       "status": "open"
+    },
+    "MNQ1!-1780964562782": {
+      "id": "MNQ1!-1780964562782",
+      "ticker": "MNQ1!",
+      "strategy": "QT-AMDX",
+      "direction": "buy",
+      "entryTime": "2026-06-09T00:22:42.782Z",
+      "entryPrice": 21450,
+      "qty": 1,
+      "exits": [],
+      "status": "open"
     }
   },
   "closedTrades": [
@@ -1388,6 +1399,21 @@
     }
   ],
   "logs": [
+    {
+      "time": "2026-06-09T00:22:42.782Z",
+      "strategy": "QT-AMDX",
+      "payload": {
+        "ticker": "MNQ1!",
+        "action": "buy",
+        "price": 21450,
+        "qty": 1,
+        "sl": 21400,
+        "tp1": 21500,
+        "chart_url": "https://www.tradingview.com/chart/5EKyhjnD/"
+      },
+      "result": "opened buy trade",
+      "error": null
+    },
     {
       "time": "2026-06-08T22:50:14.936Z",
       "strategy": "QT-AMDX",
@@ -2941,19 +2967,6 @@
         "price": 4527.052
       },
       "result": "partial exit 2 @ 4527.052 — filled 4/5",
-      "error": null
-    },
-    {
-      "time": "2026-05-21T04:40:03.319Z",
-      "strategy": "XiznitMNQ",
-      "payload": {
-        "ticker": "XAUUSD",
-        "action": "exit",
-        "tp": "TP2",
-        "qty": 2,
-        "price": 4510.844
-      },
-      "result": "partial exit 2 @ 4510.844 — filled 2/5",
       "error": null
     }
   ]
