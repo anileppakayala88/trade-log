@@ -94,9 +94,7 @@ async function captureScreenshot(chartUrl) {
       block_ads:             true,
       block_cookie_banners:  true,
     });
-    console.log("calling ScreenshotOne with url:", chartUrl);
     const res = await fetch(`https://api.screenshotone.com/take?${params}`);
-    console.log("ScreenshotOne status:", res.status);
     if (!res.ok) {
       const errBody = await res.text();
       console.error("ScreenshotOne error:", res.status, errBody);
@@ -417,8 +415,6 @@ export default async function handler(req, res) {
     // Telegram + screenshot — awaited before response so Vercel doesn't kill the execution
     try {
       const chatId = getTelegramChatId(strategy);
-      console.log("TELEGRAM chatId:", chatId);
-      console.log("SCREENSHOTONE_KEY present:", !!process.env.SCREENSHOTONE_KEY);
       if (chatId || process.env.SCREENSHOTONE_KEY) {
         const caption = buildCaption(action, ticker, price, strategy, payload, finalPnl, finalResult);
 
@@ -426,11 +422,9 @@ export default async function handler(req, res) {
         const shouldCapture = (action === "buy" || action === "sell" || finalPnl !== undefined) && chartUrl;
         if (shouldCapture) {
           const shot = await captureScreenshot(chartUrl);
-          console.log("screenshot result:", shot ? "got image" : "null");
           if (shot) {
             const filename = `${ticker}-${Date.now()}.jpg`;
             screenshotUrl = await uploadScreenshotToGitHub(shot.base64, filename);
-            console.log("screenshotUrl:", screenshotUrl);
           }
         }
 

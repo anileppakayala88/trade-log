@@ -141,39 +141,6 @@
       "qty": 1,
       "exits": [],
       "status": "open"
-    },
-    "MNQ1!-1780964867651": {
-      "id": "MNQ1!-1780964867651",
-      "ticker": "MNQ1!",
-      "strategy": "QT-AMDX",
-      "direction": "buy",
-      "entryTime": "2026-06-09T00:27:47.651Z",
-      "entryPrice": 21450,
-      "qty": 1,
-      "exits": [],
-      "status": "open"
-    },
-    "MNQ1!-1780964976599": {
-      "id": "MNQ1!-1780964976599",
-      "ticker": "MNQ1!",
-      "strategy": "QT-AMDX",
-      "direction": "buy",
-      "entryTime": "2026-06-09T00:29:36.599Z",
-      "entryPrice": 21450,
-      "qty": 1,
-      "exits": [],
-      "status": "open"
-    },
-    "MNQ1!-1780965164833": {
-      "id": "MNQ1!-1780965164833",
-      "ticker": "MNQ1!",
-      "strategy": "QT-AMDX",
-      "direction": "buy",
-      "entryTime": "2026-06-09T00:32:44.833Z",
-      "entryPrice": 21450,
-      "qty": 1,
-      "exits": [],
-      "status": "open"
     }
   },
   "closedTrades": [
@@ -1421,51 +1388,6 @@
     }
   ],
   "logs": [
-    {
-      "time": "2026-06-09T00:32:44.833Z",
-      "strategy": "QT-AMDX",
-      "payload": {
-        "ticker": "MNQ1!",
-        "action": "buy",
-        "price": 21450,
-        "qty": 1,
-        "sl": 21400,
-        "tp1": 21500,
-        "chart_url": "https://s3.tradingview.com/snapshots/e/ENpnz39c.png"
-      },
-      "result": "opened buy trade",
-      "error": null
-    },
-    {
-      "time": "2026-06-09T00:29:36.599Z",
-      "strategy": "QT-AMDX",
-      "payload": {
-        "ticker": "MNQ1!",
-        "action": "buy",
-        "price": 21450,
-        "qty": 1,
-        "sl": 21400,
-        "tp1": 21500,
-        "chart_url": "https://s3.tradingview.com/snapshots/x/YOUR_SNAPSHOT.png"
-      },
-      "result": "opened buy trade",
-      "error": null
-    },
-    {
-      "time": "2026-06-09T00:27:47.651Z",
-      "strategy": "QT-AMDX",
-      "payload": {
-        "ticker": "MNQ1!",
-        "action": "buy",
-        "price": 21450,
-        "qty": 1,
-        "sl": 21400,
-        "tp1": 21500,
-        "chart_url": "https://www.tradingview.com/chart/5EKyhjnD/"
-      },
-      "result": "opened buy trade",
-      "error": null
-    },
     {
       "time": "2026-06-08T22:50:14.936Z",
       "strategy": "QT-AMDX",
@@ -2994,6 +2916,44 @@
         "tp3_qty": 1
       },
       "result": "opened sell trade",
+      "error": null
+    },
+    {
+      "time": "2026-05-21T04:40:15.748Z",
+      "strategy": "XiznitMNQ",
+      "payload": {
+        "ticker": "XAUUSD",
+        "action": "exit",
+        "exit_type": "runner_retrace",
+        "price": 4527.052
+      },
+      "result": "closed trade — loss — pnl: -37.81 (5/5 qty)",
+      "error": null
+    },
+    {
+      "time": "2026-05-21T04:40:09.435Z",
+      "strategy": "XiznitMNQ",
+      "payload": {
+        "ticker": "XAUUSD",
+        "action": "exit",
+        "tp": "TP1",
+        "qty": 2,
+        "price": 4527.052
+      },
+      "result": "partial exit 2 @ 4527.052 — filled 4/5",
+      "error": null
+    },
+    {
+      "time": "2026-05-21T04:40:03.319Z",
+      "strategy": "XiznitMNQ",
+      "payload": {
+        "ticker": "XAUUSD",
+        "action": "exit",
+        "tp": "TP2",
+        "qty": 2,
+        "price": 4510.844
+      },
+      "result": "partial exit 2 @ 4510.844 — filled 2/5",
       "error": null
     }
   ]
