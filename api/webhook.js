@@ -410,14 +410,12 @@ export default async function handler(req, res) {
         .catch(err => console.error("journal write failed:", err.message));
     }
 
-    // fire-and-forget: formatted Telegram notification per strategy channel (never blocks the response)
-    (async () => {
-      try {
-        const chatId = getTelegramChatId(strategy);
-        console.log("TELEGRAM chatId:", chatId);
-        console.log("SCREENSHOTONE_KEY present:", !!process.env.SCREENSHOTONE_KEY);
-        if (!chatId && !process.env.SCREENSHOTONE_KEY) return;
-
+    // Telegram + screenshot — awaited before response so Vercel doesn't kill the execution
+    try {
+      const chatId = getTelegramChatId(strategy);
+      console.log("TELEGRAM chatId:", chatId);
+      console.log("SCREENSHOTONE_KEY present:", !!process.env.SCREENSHOTONE_KEY);
+      if (chatId || process.env.SCREENSHOTONE_KEY) {
         const caption = buildCaption(action, ticker, price, strategy, payload, finalPnl, finalResult);
 
         let screenshotUrl = null;
@@ -433,10 +431,10 @@ export default async function handler(req, res) {
         }
 
         await sendTelegram(chatId, caption, screenshotUrl);
-      } catch (err) {
-        console.error("telegram block failed:", err.message);
       }
-    })();
+    } catch (err) {
+      console.error("telegram block failed:", err.message);
+    }
 
     return logEntry.error
       ? res.status(500).json(responseBody)
