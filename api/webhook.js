@@ -97,7 +97,11 @@ async function captureScreenshot(chartUrl) {
     console.log("calling ScreenshotOne with url:", chartUrl);
     const res = await fetch(`https://api.screenshotone.com/take?${params}`);
     console.log("ScreenshotOne status:", res.status);
-    if (!res.ok) return null;
+    if (!res.ok) {
+      const errBody = await res.text();
+      console.error("ScreenshotOne error:", res.status, errBody);
+      return null;
+    }
     const base64 = Buffer.from(await res.arrayBuffer()).toString("base64");
     return { base64, mimeType: "image/jpeg" };
   } catch {
