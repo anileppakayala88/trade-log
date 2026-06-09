@@ -35,9 +35,12 @@ trade-log/
 ├── docs/
 │   ├── trades.json         ← live trade data (auto-updated by webhook)
 │   ├── journal.jsonl       ← append-only newline-delimited trade journal
+│   ├── journal_viewer.html ← static journal viewer (GitHub Pages)
 │   └── screenshots/        ← chart screenshots uploaded per trade
 ├── public/
 │   └── index.html          ← GitHub Pages dashboard
+├── backfill_journal.py     ← rebuilds journal.jsonl from trades.json
+├── generate_viewer.py      ← regenerates journal_viewer.html from journal.jsonl
 ├── vercel.json             ← Vercel routing config
 └── README.md
 ```
@@ -236,6 +239,15 @@ The strategy name in the URL is normalised to lowercase with spaces/underscores 
 - Auto-refreshes every 30 seconds (appends `?t=Date.now()` to bust CDN cache)
 - Shows open trades with entry details and partial fills
 - Shows closed trades with PnL and result
+
+## Journal Viewer
+
+- URL: https://anileppakayala88.github.io/trade-log/journal_viewer.html
+- Static HTML file served from `docs/journal_viewer.html`
+- Filterable by type (entry/exit), direction, result, instrument, and strategy
+- Shows summary stats: trades, wins, losses, win rate, total points, total P&L
+- Regenerate locally after editing journal.jsonl: `python3 generate_viewer.py`
+- Backfill journal from existing trades.json: `python3 backfill_journal.py`
 
 ---
 
