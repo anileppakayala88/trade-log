@@ -30,9 +30,10 @@ const POINT_VALUES = { "MNQ1!": 2, "MGC1!": 10, "MES1!": 5, "NQ1!": 20, "ES1!": 
 
 // Telegram routing: strategy name → chat_id env var
 const TELEGRAM_CHANNEL_MAP = {
-  "qt-amdx":  process.env.TELEGRAM_CHAT_QT_AMDX,
-  "project2": process.env.TELEGRAM_CHAT_PROJECT2,
-  "project3": process.env.TELEGRAM_CHAT_PROJECT3,
+  "qt-amdx":   process.env.TELEGRAM_CHAT_QT_AMDX,
+  "ash-sweep": process.env.TELEGRAM_CHAT_ASH_SWEEP,
+  "project2":  process.env.TELEGRAM_CHAT_PROJECT2,
+  "project3":  process.env.TELEGRAM_CHAT_PROJECT3,
 };
 
 function strategyKey(name) {
