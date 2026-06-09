@@ -94,7 +94,9 @@ async function captureScreenshot(chartUrl) {
       block_ads:             true,
       block_cookie_banners:  true,
     });
+    console.log("calling ScreenshotOne with url:", chartUrl);
     const res = await fetch(`https://api.screenshotone.com/take?${params}`);
+    console.log("ScreenshotOne status:", res.status);
     if (!res.ok) return null;
     const base64 = Buffer.from(await res.arrayBuffer()).toString("base64");
     return { base64, mimeType: "image/jpeg" };
@@ -412,6 +414,8 @@ export default async function handler(req, res) {
     (async () => {
       try {
         const chatId = getTelegramChatId(strategy);
+        console.log("TELEGRAM chatId:", chatId);
+        console.log("SCREENSHOTONE_KEY present:", !!process.env.SCREENSHOTONE_KEY);
         if (!chatId && !process.env.SCREENSHOTONE_KEY) return;
 
         const caption = buildCaption(action, ticker, price, strategy, payload, finalPnl, finalResult);
@@ -420,9 +424,11 @@ export default async function handler(req, res) {
         const shouldCapture = (action === "buy" || action === "sell" || finalPnl !== undefined) && chartUrl;
         if (shouldCapture) {
           const shot = await captureScreenshot(chartUrl);
+          console.log("screenshot result:", shot ? "got image" : "null");
           if (shot) {
             const filename = `${ticker}-${Date.now()}.jpg`;
             screenshotUrl = await uploadScreenshotToGitHub(shot.base64, filename);
+            console.log("screenshotUrl:", screenshotUrl);
           }
         }
 
