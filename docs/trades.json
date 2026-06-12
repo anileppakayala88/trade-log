@@ -90,17 +90,6 @@
       "exits": [],
       "status": "open"
     },
-    "MNQ1!-1781259007947": {
-      "id": "MNQ1!-1781259007947",
-      "ticker": "MNQ1!",
-      "strategy": "ash-sweep",
-      "direction": "sell",
-      "entryTime": "2026-06-12T10:10:07.947Z",
-      "entryPrice": 29622,
-      "qty": 1,
-      "exits": [],
-      "status": "open"
-    },
     "XAUUSD-1781277606388": {
       "id": "XAUUSD-1781277606388",
       "ticker": "XAUUSD",
@@ -132,6 +121,28 @@
     }
   },
   "closedTrades": [
+    {
+      "id": "MNQ1!-1781259007947",
+      "ticker": "MNQ1!",
+      "strategy": "ash-sweep",
+      "direction": "sell",
+      "entryTime": "2026-06-12T10:10:07.947Z",
+      "entryPrice": 29622,
+      "qty": 1,
+      "exits": [
+        {
+          "price": 29608.25,
+          "qty": 1,
+          "time": "2026-06-12T18:28:01.376Z",
+          "tp": null
+        }
+      ],
+      "status": "closed",
+      "closeTime": "2026-06-12T18:28:01.376Z",
+      "exitPrice": 29608.25,
+      "pnl": 27.5,
+      "result": "win"
+    },
     {
       "id": "MNQ1!-1781162169036",
       "ticker": "MNQ1!",
@@ -862,6 +873,19 @@
     }
   ],
   "logs": [
+    {
+      "time": "2026-06-12T18:28:01.376Z",
+      "strategy": "ash-sweep",
+      "payload": {
+        "ticker": "MNQ1!",
+        "action": "exit",
+        "price": 29608.25,
+        "qty": 1,
+        "chart_url": "{{imageurl}}"
+      },
+      "result": "closed trade — win — pnl: 27.5 (1/1 qty)",
+      "error": null
+    },
     {
       "time": "2026-06-12T17:06:19.389Z",
       "strategy": "XiznitMNQ",
@@ -2391,19 +2415,6 @@
         "tp": "TP2",
         "qty": 2,
         "price": 4739.882
-      },
-      "result": null,
-      "error": "No open trade for XAUUSD"
-    },
-    {
-      "time": "2026-05-07T06:40:04.863Z",
-      "strategy": "XiznitMNQ",
-      "payload": {
-        "ticker": "XAUUSD",
-        "action": "exit",
-        "tp": "TP1",
-        "qty": 2,
-        "price": 4720.426
       },
       "result": null,
       "error": "No open trade for XAUUSD"
