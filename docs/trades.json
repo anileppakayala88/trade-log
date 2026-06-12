@@ -44,17 +44,6 @@
       "exits": [],
       "status": "open"
     },
-    "MNQ1!-1781162169036": {
-      "id": "MNQ1!-1781162169036",
-      "ticker": "MNQ1!",
-      "strategy": "ash-sweep",
-      "direction": "sell",
-      "entryTime": "2026-06-11T07:16:09.036Z",
-      "entryPrice": 28792.5,
-      "qty": 1,
-      "exits": [],
-      "status": "open"
-    },
     "XAUUSD-1781194804498": {
       "id": "XAUUSD-1781194804498",
       "ticker": "XAUUSD",
@@ -103,6 +92,28 @@
     }
   },
   "closedTrades": [
+    {
+      "id": "MNQ1!-1781162169036",
+      "ticker": "MNQ1!",
+      "strategy": "ash-sweep",
+      "direction": "sell",
+      "entryTime": "2026-06-11T07:16:09.036Z",
+      "entryPrice": 28792.5,
+      "qty": 1,
+      "exits": [
+        {
+          "price": 29622,
+          "qty": 1,
+          "time": "2026-06-12T10:10:01.125Z",
+          "tp": null
+        }
+      ],
+      "status": "closed",
+      "closeTime": "2026-06-12T10:10:01.125Z",
+      "exitPrice": 29622,
+      "pnl": -1659,
+      "result": "loss"
+    },
     {
       "id": "MNQ1!-1781190181816",
       "ticker": "MNQ1!",
@@ -811,6 +822,19 @@
     }
   ],
   "logs": [
+    {
+      "time": "2026-06-12T10:10:01.125Z",
+      "strategy": "ash-sweep",
+      "payload": {
+        "ticker": "MNQ1!",
+        "action": "exit",
+        "price": 29622,
+        "qty": 1,
+        "chart_url": "{{imageurl}}"
+      },
+      "result": "closed trade — loss — pnl: -1659 (1/1 qty)",
+      "error": null
+    },
     {
       "time": "2026-06-12T08:00:12.813Z",
       "strategy": "XiznitMNQ",
@@ -2320,25 +2344,6 @@
     },
     {
       "time": "2026-05-07T03:00:28.248Z",
-      "strategy": "XiznitMNQ",
-      "payload": {
-        "ticker": "XAUUSD",
-        "action": "buy",
-        "price": 4702,
-        "qty": 5,
-        "sl": 4688.81,
-        "tp1": 4720.426,
-        "tp1_qty": 2,
-        "tp2": 4739.882,
-        "tp2_qty": 2,
-        "tp3": 4747.178,
-        "tp3_qty": 1
-      },
-      "result": "opened buy trade",
-      "error": null
-    },
-    {
-      "time": "2026-05-07T03:00:22.826Z",
       "strategy": "XiznitMNQ",
       "payload": {
         "ticker": "XAUUSD",
