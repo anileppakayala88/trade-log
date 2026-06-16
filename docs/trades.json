@@ -119,17 +119,6 @@
       ],
       "status": "open"
     },
-    "MNQ1!-1781293443390": {
-      "id": "MNQ1!-1781293443390",
-      "ticker": "MNQ1!",
-      "strategy": "ash-sweep",
-      "direction": "sell",
-      "entryTime": "2026-06-12T19:44:03.390Z",
-      "entryPrice": 29604.25,
-      "qty": 1,
-      "exits": [],
-      "status": "open"
-    },
     "XAUUSD-1781548804321": {
       "id": "XAUUSD-1781548804321",
       "ticker": "XAUUSD",
@@ -150,6 +139,28 @@
     }
   },
   "closedTrades": [
+    {
+      "id": "MNQ1!-1781293443390",
+      "ticker": "MNQ1!",
+      "strategy": "ash-sweep",
+      "direction": "sell",
+      "entryTime": "2026-06-12T19:44:03.390Z",
+      "entryPrice": 29604.25,
+      "qty": 1,
+      "exits": [
+        {
+          "price": 30841.25,
+          "qty": 1,
+          "time": "2026-06-16T14:08:01.735Z",
+          "tp": null
+        }
+      ],
+      "status": "closed",
+      "closeTime": "2026-06-16T14:08:01.735Z",
+      "exitPrice": 30841.25,
+      "pnl": -2474,
+      "result": "loss"
+    },
     {
       "id": "XAUUSD-1781512804830",
       "ticker": "XAUUSD",
@@ -1002,6 +1013,19 @@
     }
   ],
   "logs": [
+    {
+      "time": "2026-06-16T14:08:01.735Z",
+      "strategy": "ash-sweep",
+      "payload": {
+        "ticker": "MNQ1!",
+        "action": "exit",
+        "price": 30841.25,
+        "qty": 1,
+        "chart_url": "{{imageurl}}"
+      },
+      "result": "closed trade — loss — pnl: -2474 (1/1 qty)",
+      "error": null
+    },
     {
       "time": "2026-06-16T12:52:19.753Z",
       "strategy": "XiznitMNQ",
@@ -2507,25 +2531,6 @@
         "price": 4770.564
       },
       "result": "partial exit 1 @ 4770.564 — filled 1/5",
-      "error": null
-    },
-    {
-      "time": "2026-05-07T15:40:18.193Z",
-      "strategy": "XiznitMNQ",
-      "payload": {
-        "ticker": "XAUUSD",
-        "action": "sell",
-        "price": 4753.95,
-        "qty": 5,
-        "sl": 4737.44,
-        "tp1": 4770.564,
-        "tp1_qty": 2,
-        "tp2": 4790.948,
-        "tp2_qty": 2,
-        "tp3": 4798.592,
-        "tp3_qty": 1
-      },
-      "result": "opened sell trade",
       "error": null
     }
   ]
