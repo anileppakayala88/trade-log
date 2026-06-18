@@ -148,17 +148,6 @@
       "exits": [],
       "status": "open"
     },
-    "MNQ1!-1781780108222": {
-      "id": "MNQ1!-1781780108222",
-      "ticker": "MNQ1!",
-      "strategy": "ash-sweep",
-      "direction": "sell",
-      "entryTime": "2026-06-18T10:55:08.221Z",
-      "entryPrice": 30428.5,
-      "qty": 1,
-      "exits": [],
-      "status": "open"
-    },
     "XAUUSD-1781787607670": {
       "id": "XAUUSD-1781787607670",
       "ticker": "XAUUSD",
@@ -172,6 +161,28 @@
     }
   },
   "closedTrades": [
+    {
+      "id": "MNQ1!-1781780108222",
+      "ticker": "MNQ1!",
+      "strategy": "ash-sweep",
+      "direction": "sell",
+      "entryTime": "2026-06-18T10:55:08.221Z",
+      "entryPrice": 30428.5,
+      "qty": 1,
+      "exits": [
+        {
+          "price": 30402,
+          "qty": 1,
+          "time": "2026-06-18T13:55:01.406Z",
+          "tp": null
+        }
+      ],
+      "status": "closed",
+      "closeTime": "2026-06-18T13:55:01.406Z",
+      "exitPrice": 30402,
+      "pnl": 53,
+      "result": "win"
+    },
     {
       "id": "XAUUSD-1781773205399",
       "ticker": "XAUUSD",
@@ -1362,6 +1373,19 @@
     }
   ],
   "logs": [
+    {
+      "time": "2026-06-18T13:55:01.406Z",
+      "strategy": "ash-sweep",
+      "payload": {
+        "ticker": "MNQ1!",
+        "action": "exit",
+        "price": 30402,
+        "qty": 1,
+        "chart_url": "{{imageurl}}"
+      },
+      "result": "closed trade — win — pnl: 53 (1/1 qty)",
+      "error": null
+    },
     {
       "time": "2026-06-18T13:00:07.670Z",
       "strategy": "XiznitMNQ",
@@ -2816,19 +2840,6 @@
         "price": 4654.208
       },
       "result": "partial exit 2 @ 4654.208 — filled 4/5",
-      "error": null
-    },
-    {
-      "time": "2026-05-11T09:21:49.243Z",
-      "strategy": "XiznitMNQ",
-      "payload": {
-        "ticker": "XAUUSD",
-        "action": "exit",
-        "tp": "TP1",
-        "qty": 2,
-        "price": 4664.144
-      },
-      "result": "partial exit 2 @ 4664.144 — filled 2/5",
       "error": null
     }
   ]
