@@ -148,7 +148,20 @@
       "exits": [],
       "status": "open"
     },
-    "XAUUSD-1781773205399": {
+    "MNQ1!-1781780108222": {
+      "id": "MNQ1!-1781780108222",
+      "ticker": "MNQ1!",
+      "strategy": "ash-sweep",
+      "direction": "sell",
+      "entryTime": "2026-06-18T10:55:08.221Z",
+      "entryPrice": 30428.5,
+      "qty": 1,
+      "exits": [],
+      "status": "open"
+    }
+  },
+  "closedTrades": [
+    {
       "id": "XAUUSD-1781773205399",
       "ticker": "XAUUSD",
       "strategy": "XiznitMNQ",
@@ -168,23 +181,20 @@
           "qty": 1,
           "time": "2026-06-18T12:21:54.636Z",
           "tp": "TP3"
+        },
+        {
+          "price": 4219.572,
+          "qty": 2,
+          "time": "2026-06-18T12:22:01.487Z",
+          "tp": "TP2"
         }
       ],
-      "status": "open"
+      "status": "closed",
+      "closeTime": "2026-06-18T12:22:01.487Z",
+      "exitPrice": 4219.572,
+      "pnl": 180.52,
+      "result": "win"
     },
-    "MNQ1!-1781780108222": {
-      "id": "MNQ1!-1781780108222",
-      "ticker": "MNQ1!",
-      "strategy": "ash-sweep",
-      "direction": "sell",
-      "entryTime": "2026-06-18T10:55:08.221Z",
-      "entryPrice": 30428.5,
-      "qty": 1,
-      "exits": [],
-      "status": "open"
-    }
-  },
-  "closedTrades": [
     {
       "id": "MNQ1!-1781781421888",
       "ticker": "MNQ1!",
@@ -1341,6 +1351,19 @@
     }
   ],
   "logs": [
+    {
+      "time": "2026-06-18T12:22:01.487Z",
+      "strategy": "XiznitMNQ",
+      "payload": {
+        "ticker": "XAUUSD",
+        "action": "exit",
+        "tp": "TP2",
+        "qty": 2,
+        "price": 4219.572
+      },
+      "result": "closed trade — win — pnl: 180.52 (5/5 qty)",
+      "error": null
+    },
     {
       "time": "2026-06-18T12:21:54.636Z",
       "strategy": "XiznitMNQ",
@@ -2796,19 +2819,6 @@
       },
       "result": "opened sell trade",
       "error": null
-    },
-    {
-      "time": "2026-05-11T06:00:29.984Z",
-      "strategy": "XiznitMNQ",
-      "payload": {
-        "ticker": "XAUUSD",
-        "action": "exit",
-        "tp": "TP1",
-        "qty": 2,
-        "price": 4667.912
-      },
-      "result": null,
-      "error": "No open trade for XAUUSD"
     }
   ]
 }
