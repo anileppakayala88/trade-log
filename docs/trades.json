@@ -159,17 +159,6 @@
       "exits": [],
       "status": "open"
     },
-    "MNQ1!-1781790909957": {
-      "id": "MNQ1!-1781790909957",
-      "ticker": "MNQ1!",
-      "strategy": "ash-sweep",
-      "direction": "sell",
-      "entryTime": "2026-06-18T13:55:09.957Z",
-      "entryPrice": 30402,
-      "qty": 1,
-      "exits": [],
-      "status": "open"
-    },
     "XAUUSD-1781797208870": {
       "id": "XAUUSD-1781797208870",
       "ticker": "XAUUSD",
@@ -227,6 +216,28 @@
     }
   },
   "closedTrades": [
+    {
+      "id": "MNQ1!-1781790909957",
+      "ticker": "MNQ1!",
+      "strategy": "ash-sweep",
+      "direction": "sell",
+      "entryTime": "2026-06-18T13:55:09.957Z",
+      "entryPrice": 30402,
+      "qty": 1,
+      "exits": [
+        {
+          "price": 30663.75,
+          "qty": 1,
+          "time": "2026-06-22T14:43:01.575Z",
+          "tp": null
+        }
+      ],
+      "status": "closed",
+      "closeTime": "2026-06-22T14:43:01.575Z",
+      "exitPrice": 30663.75,
+      "pnl": -523.5,
+      "result": "loss"
+    },
     {
       "id": "XAUUSD-1782105604226",
       "ticker": "XAUUSD",
@@ -1507,6 +1518,19 @@
     }
   ],
   "logs": [
+    {
+      "time": "2026-06-22T14:43:01.575Z",
+      "strategy": "ash-sweep",
+      "payload": {
+        "ticker": "MNQ1!",
+        "action": "exit",
+        "price": 30663.75,
+        "qty": 1,
+        "chart_url": "{{imageurl}}"
+      },
+      "result": "closed trade — loss — pnl: -523.5 (1/1 qty)",
+      "error": null
+    },
     {
       "time": "2026-06-22T13:29:05.961Z",
       "strategy": "XiznitMNQ",
@@ -2978,19 +3002,6 @@
         "chart_url": "{{imageurl}}"
       },
       "result": "opened sell trade",
-      "error": null
-    },
-    {
-      "time": "2026-06-09T09:01:03.196Z",
-      "strategy": "ash-sweep",
-      "payload": {
-        "ticker": "MNQ1!",
-        "action": "exit",
-        "price": 29653.75,
-        "qty": 1,
-        "chart_url": "{{imageurl}}"
-      },
-      "result": "closed trade — win — pnl: 12.5 (1/1 qty)",
       "error": null
     }
   ]
