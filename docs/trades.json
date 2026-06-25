@@ -322,17 +322,6 @@
       ],
       "status": "open"
     },
-    "MNQ1!-1782313988334": {
-      "id": "MNQ1!-1782313988334",
-      "ticker": "MNQ1!",
-      "strategy": "ash-sweep",
-      "direction": "sell",
-      "entryTime": "2026-06-24T15:13:08.334Z",
-      "entryPrice": 29864.75,
-      "qty": 1,
-      "exits": [],
-      "status": "open"
-    },
     "XAUUSD-1782322806555": {
       "id": "XAUUSD-1782322806555",
       "ticker": "XAUUSD",
@@ -368,6 +357,28 @@
     }
   },
   "closedTrades": [
+    {
+      "id": "MNQ1!-1782313988334",
+      "ticker": "MNQ1!",
+      "strategy": "ash-sweep",
+      "direction": "sell",
+      "entryTime": "2026-06-24T15:13:08.334Z",
+      "entryPrice": 29864.75,
+      "qty": 1,
+      "exits": [
+        {
+          "price": 30161.25,
+          "qty": 1,
+          "time": "2026-06-25T07:46:02.819Z",
+          "tp": null
+        }
+      ],
+      "status": "closed",
+      "closeTime": "2026-06-25T07:46:02.819Z",
+      "exitPrice": 30161.25,
+      "pnl": -593,
+      "result": "loss"
+    },
     {
       "id": "MNQ1!-1782139387956",
       "ticker": "MNQ1!",
@@ -1828,6 +1839,19 @@
     }
   ],
   "logs": [
+    {
+      "time": "2026-06-25T07:46:02.819Z",
+      "strategy": "ash-sweep",
+      "payload": {
+        "ticker": "MNQ1!",
+        "action": "exit",
+        "price": 30161.25,
+        "qty": 1,
+        "chart_url": "{{imageurl}}"
+      },
+      "result": "closed trade — loss — pnl: -593 (1/1 qty)",
+      "error": null
+    },
     {
       "time": "2026-06-25T03:00:02.888Z",
       "strategy": "XiznitMNQ",
@@ -3317,20 +3341,6 @@
         "price": 30538.25,
         "qty": 1,
         "sl": 30559,
-        "chart_url": "{{imageurl}}"
-      },
-      "result": "opened sell trade",
-      "error": null
-    },
-    {
-      "time": "2026-06-12T19:44:03.390Z",
-      "strategy": "ash-sweep",
-      "payload": {
-        "ticker": "MNQ1!",
-        "action": "sell",
-        "price": 29604.25,
-        "qty": 1,
-        "sl": 29631.75,
         "chart_url": "{{imageurl}}"
       },
       "result": "opened sell trade",
