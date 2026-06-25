@@ -354,6 +354,17 @@
       "qty": 5,
       "exits": [],
       "status": "open"
+    },
+    "MNQ1!-1782384728236": {
+      "id": "MNQ1!-1782384728236",
+      "ticker": "MNQ1!",
+      "strategy": "ash-sweep",
+      "direction": "sell",
+      "entryTime": "2026-06-25T10:52:08.236Z",
+      "entryPrice": 30156.25,
+      "qty": 1,
+      "exits": [],
+      "status": "open"
     }
   },
   "closedTrades": [
@@ -1906,6 +1917,20 @@
   ],
   "logs": [
     {
+      "time": "2026-06-25T10:52:08.236Z",
+      "strategy": "ash-sweep",
+      "payload": {
+        "ticker": "MNQ1!",
+        "action": "sell",
+        "price": 30156.25,
+        "qty": 1,
+        "sl": 30168.75,
+        "chart_url": "{{imageurl}}"
+      },
+      "result": "opened sell trade",
+      "error": null
+    },
+    {
       "time": "2026-06-25T10:52:01.940Z",
       "strategy": "ash-sweep",
       "payload": {
@@ -3392,19 +3417,6 @@
         "price": 4396.066
       },
       "result": "closed trade — win — pnl: 159.35 (5/5 qty)",
-      "error": null
-    },
-    {
-      "time": "2026-06-15T16:21:32.305Z",
-      "strategy": "XiznitMNQ",
-      "payload": {
-        "ticker": "XAUUSD",
-        "action": "exit",
-        "tp": "TP2",
-        "qty": 2,
-        "price": 4384.684
-      },
-      "result": "partial exit 2 @ 4384.684 — filled 4/5",
       "error": null
     }
   ]
