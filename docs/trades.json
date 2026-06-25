@@ -365,6 +365,17 @@
       "qty": 1,
       "exits": [],
       "status": "open"
+    },
+    "MNQ1!-1782374521662": {
+      "id": "MNQ1!-1782374521662",
+      "ticker": "MNQ1!",
+      "strategy": "ash-sweep",
+      "direction": "sell",
+      "entryTime": "2026-06-25T08:02:01.662Z",
+      "entryPrice": 30157.75,
+      "qty": 1,
+      "exits": [],
+      "status": "open"
     }
   },
   "closedTrades": [
@@ -1850,6 +1861,20 @@
     }
   ],
   "logs": [
+    {
+      "time": "2026-06-25T08:02:01.662Z",
+      "strategy": "ash-sweep",
+      "payload": {
+        "ticker": "MNQ1!",
+        "action": "sell",
+        "price": 30157.75,
+        "qty": 1,
+        "sl": 30165,
+        "chart_url": "{{imageurl}}"
+      },
+      "result": "opened sell trade",
+      "error": null
+    },
     {
       "time": "2026-06-25T07:46:09.203Z",
       "strategy": "ash-sweep",
@@ -3342,19 +3367,6 @@
         "chart_url": "{{imageurl}}"
       },
       "result": "opened sell trade",
-      "error": null
-    },
-    {
-      "time": "2026-06-15T07:20:09.389Z",
-      "strategy": "ash-sweep",
-      "payload": {
-        "ticker": "MNQ1!",
-        "action": "exit",
-        "price": 30538.25,
-        "qty": 1,
-        "chart_url": "{{imageurl}}"
-      },
-      "result": "closed trade — win — pnl: 0 (1/1 qty)",
       "error": null
     }
   ]
