@@ -344,17 +344,6 @@
       "exits": [],
       "status": "open"
     },
-    "MNQ1!-1782385747813": {
-      "id": "MNQ1!-1782385747813",
-      "ticker": "MNQ1!",
-      "strategy": "ash-sweep",
-      "direction": "sell",
-      "entryTime": "2026-06-25T11:09:07.813Z",
-      "entryPrice": 30156.75,
-      "qty": 1,
-      "exits": [],
-      "status": "open"
-    },
     "XAUUSD-1782393605698": {
       "id": "XAUUSD-1782393605698",
       "ticker": "XAUUSD",
@@ -481,6 +470,28 @@
     }
   },
   "closedTrades": [
+    {
+      "id": "MNQ1!-1782385747813",
+      "ticker": "MNQ1!",
+      "strategy": "ash-sweep",
+      "direction": "sell",
+      "entryTime": "2026-06-25T11:09:07.813Z",
+      "entryPrice": 30156.75,
+      "qty": 1,
+      "exits": [
+        {
+          "price": 30187.5,
+          "qty": 1,
+          "time": "2026-06-30T13:50:01.634Z",
+          "tp": null
+        }
+      ],
+      "status": "closed",
+      "closeTime": "2026-06-30T13:50:01.634Z",
+      "exitPrice": 30187.5,
+      "pnl": -61.5,
+      "result": "loss"
+    },
     {
       "id": "XAUUSD-1782811204397",
       "ticker": "XAUUSD",
@@ -2244,6 +2255,19 @@
   ],
   "logs": [
     {
+      "time": "2026-06-30T13:50:01.634Z",
+      "strategy": "ash-sweep",
+      "payload": {
+        "ticker": "MNQ1!",
+        "action": "exit",
+        "price": 30187.5,
+        "qty": 1,
+        "chart_url": "{{imageurl}}"
+      },
+      "result": "closed trade — loss — pnl: -61.5 (1/1 qty)",
+      "error": null
+    },
+    {
       "time": "2026-06-30T13:40:09.242Z",
       "strategy": "XiznitMNQ",
       "payload": {
@@ -3757,19 +3781,6 @@
         "chart_url": "{{imageurl}}"
       },
       "result": "opened sell trade",
-      "error": null
-    },
-    {
-      "time": "2026-06-18T10:55:01.733Z",
-      "strategy": "ash-sweep",
-      "payload": {
-        "ticker": "MNQ1!",
-        "action": "exit",
-        "price": 30428.5,
-        "qty": 1,
-        "chart_url": "{{imageurl}}"
-      },
-      "result": "closed trade — win — pnl: 825.5 (1/1 qty)",
       "error": null
     }
   ]
